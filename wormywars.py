@@ -7,12 +7,14 @@
 import random
 import pygame
 import sys
+import time
 from pygame.locals import *
 
 NUM_LIVES = 3
 FPS = 8
 GROW_BY = 4
 DOUBLE_CLICK_TIME = 0.3     # in seconds
+DEATH_TIME = 1.0            # in seconds
 
 GRAPE_APPEAR_TIME = 20      # in seconds
 GRAPE_POINTS = 17
@@ -655,7 +657,8 @@ def runGame(num_players, num_robots=0):
         drawFruit(lime, LIMEGREEN)
         
         if any(worm_died):
-            for jj in range(50):
+            start_time = time.time()
+            while (time.time() - start_time < DEATH_TIME):
                 for ii in range(num_players):
                     if worm_died[ii]:
                         drawWorm(allWormsCoords[ii], BLACK, is_robot[ii], is_shrinking[ii], turbo_ticks[ii]>0)
