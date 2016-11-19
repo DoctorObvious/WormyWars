@@ -20,7 +20,16 @@ At any time you can press:
 -  F5: to reset the game
 - Esc: to exit
 
+To control your worm: Hit the key for the directions you want to go! Double hit for turbo!
+            UP          DOWN        LEFT        RIGHT
+Player 1:   up arrow    down arrow  left arrow  right arrow
+Player 2:   W           S           A           D
+Player 3:   I           K           J           L
+Player 4:   NumPad 8    NumPad 5    NumPad 4    NumPad 6
 
+-------------------------------------------------------------------
 Installation:
 
-You'll need to install pygame.
+You'll need to install the Python pygame module using pip or another method.
+
+To start: python wormywars.py
