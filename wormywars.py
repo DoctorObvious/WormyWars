@@ -241,7 +241,6 @@ def runGame(num_players, num_robots=0):
 
     do_switcheroo = False
     is_alive = [True] * num_players
-    is_visible = [True] * num_players
     is_shrinking = [False] * num_players
     is_robot = [False] * num_players
     num_to_grow = [0] * num_players
@@ -310,10 +309,10 @@ def runGame(num_players, num_robots=0):
         # Handle Robots
         for ii in range(num_players):
             if is_robot[ii] and is_alive[ii]:
-                #visibleWormCoords = allVisibleWormCoords(allWormsCoords, is_alive, is_visible)
+                #visibleWormCoords = allVisibleWormCoords(allWormsCoords, is_alive, invisible_ticks)
                 #visibleCoords = makeCoordsList(portalCoords) + visibleWormCoords
 
-                visibleWorms = allVisibleWormNumbers(is_alive, is_visible)
+                visibleWorms = allVisibleWormNumbers(is_alive, invisible_ticks)
                 otherWormCoords = []
                 otherWormDirections = []
                 # TODO: Cleanup!
@@ -485,7 +484,8 @@ def runGame(num_players, num_robots=0):
                         for wormBlock in allWormsCoords[jj]:
                             if wormBlock['x'] == wormCoords[HEAD]['x'] and wormBlock['y'] == wormCoords[HEAD]['y']:
                                 worm_died[ii] = True      # This worm dies
-                                drawWorm(allWormsCoords[ii], WORM_COLORS[ii], is_robot[ii], is_shrinking[ii], turbo_ticks[ii]>0)
+                                drawWorm(allWormsCoords[ii], WORM_COLORS[ii], is_robot[ii], is_shrinking[ii],
+                                         turbo_ticks[ii] > 0)
                                 if kk == 0:               # This is the other head block 
                                     worm_died[jj] = True  # The other worm dies
                             kk += 1
@@ -615,23 +615,23 @@ def runGame(num_players, num_robots=0):
             blueberry = []
 
         # Is it time to make a lime?
-        if len(lime)==0 and (GLOBAL_TIME - last_lime_time > LIME_APPEAR_TIME) and sum(is_alive)>1:
+        if len(lime) == 0 and (GLOBAL_TIME - last_lime_time > LIME_APPEAR_TIME) and sum(is_alive)>1:
             # Make a lime!
             lime = getSafeFruitLocation(existingCoords)
             lime_time = GLOBAL_TIME
             last_lime_time = lime_time
-        elif (len(lime)>0 and (GLOBAL_TIME - lime_time > LIME_DISAPPEAR_TIME)) or sum(is_alive)<2:
+        elif (len(lime) > 0 and (GLOBAL_TIME - lime_time > LIME_DISAPPEAR_TIME)) or sum(is_alive)<2:
             # It is time for the lime to disappear
             lime = []
             
         # Is it time to make a grape?
         GLOBAL_TIME = frame_count/FPS
-        if len(grape)==0 and (GLOBAL_TIME-last_grape_time > GRAPE_APPEAR_TIME):
+        if len(grape) == 0 and (GLOBAL_TIME-last_grape_time > GRAPE_APPEAR_TIME):
             # Make a grape!
             grape = getSafeFruitLocation(existingCoords)
 
         # Is it time to make a banana?
-        if len(banana)==0 and (GLOBAL_TIME-last_banana_time > BANANA_APPEAR_TIME):
+        if len(banana) == 0 and (GLOBAL_TIME-last_banana_time > BANANA_APPEAR_TIME):
             # Make a banana!
             banana = getSafeFruitLocation(existingCoords)
 
@@ -642,10 +642,9 @@ def runGame(num_players, num_robots=0):
             drawScore(ii, scores[ii], WORM_COLORS[ii])
             drawTurbos(ii, num_turbos[ii], WORM_COLORS[ii])
             drawLives(ii, num_lives[ii], WORM_COLORS[ii])
-
-            # If alive and visible...
-            if is_alive[ii] and invisible_ticks[ii]==0:
-                drawWorm(allWormsCoords[ii], WORM_COLORS[ii], is_robot[ii], is_shrinking[ii], turbo_ticks[ii]>0)
+            if is_alive[ii]:
+                drawWorm(allWormsCoords[ii], WORM_COLORS[ii], is_robot[ii], is_shrinking[ii], turbo_ticks[ii] > 0,
+                         invisible_ticks[ii] == 0)
 
         drawPortals(portalCoords)
 
@@ -661,12 +660,13 @@ def runGame(num_players, num_robots=0):
             while (time.time() - start_time < DEATH_TIME):
                 for ii in range(num_players):
                     if worm_died[ii]:
-                        drawWorm(allWormsCoords[ii], BLACK, is_robot[ii], is_shrinking[ii], turbo_ticks[ii]>0)
+                        drawWorm(allWormsCoords[ii], BLACK, is_robot[ii], is_shrinking[ii], turbo_ticks[ii] > 0)
                 pygame.display.update()
                 FPSCLOCK.tick(100)
                 for ii in range(num_players):
                     if worm_died[ii]:
-                        drawWorm(allWormsCoords[ii], WORM_COLORS[ii], is_robot[ii], is_shrinking[ii], turbo_ticks[ii]>0)
+                        drawWorm(allWormsCoords[ii], WORM_COLORS[ii], is_robot[ii], is_shrinking[ii],
+                                 turbo_ticks[ii] > 0)
                 pygame.display.update()
                 FPSCLOCK.tick(100)
 
@@ -678,7 +678,7 @@ def runGame(num_players, num_robots=0):
                                 wormBirth(ii, existingCoords)
                 else:
                     is_alive[ii] = False
-                    drawWorm(allWormsCoords[ii], WORM_COLORS[ii], is_robot[ii], is_shrinking[ii], turbo_ticks[ii]>0)
+                    drawWorm(allWormsCoords[ii], WORM_COLORS[ii], is_robot[ii], is_shrinking[ii], turbo_ticks[ii] > 0)
                     sound_die.play()
                     allWormsCoords[ii] = []
                 num_lives[ii] -= 1
@@ -1052,11 +1052,13 @@ def switcheroo(allWormsCoords, directions, is_alive):
 
     return newWormsCoords, newDirections
 
+
 def drawPressKeyMsg():
     pressKeySurf = BASICFONT.render('Press # of players (1-4) to play.', True, LIGHTGRAY)
     pressKeyRect = pressKeySurf.get_rect()
     pressKeyRect.topleft = (WINDOWWIDTH - 300, WINDOWHEIGHT - 30)
     DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
+
 
 def makeCoordsList(coords):
     coordList = []
@@ -1064,19 +1066,22 @@ def makeCoordsList(coords):
         coordList = coordList + coord
     return coordList
 
-def allVisibleWormCoords(allWormsCoords, is_alive, is_visible):
+
+def allVisibleWormCoords(allWormsCoords, is_alive, invisible_ticks):
     coordList = []
     for ii in range(len(is_alive)):
-        if is_alive[ii] and is_visible[ii]:
+        is_visible = invisible_ticks[ii] == 0
+        if is_alive[ii] and is_visible:
             coord = allWormsCoords[ii]      
             coordList = coordList + coord
         
     return coordList
 
-def allVisibleWormNumbers(is_alive, is_visible):
+def allVisibleWormNumbers(is_alive, invisible_ticks):
     nums = []
     for ii in range(len(is_alive)):
-        if is_alive[ii] and is_visible[ii]:
+        is_visible = invisible_ticks[ii] == 0
+        if is_alive[ii] and is_visible:
             nums.append(ii)
         
     return nums
@@ -1175,11 +1180,13 @@ def drawScore(player_number, score, color):
     scoreRect.topleft = (INFO_POSITION[player_number]['x'], INFO_POSITION[player_number]['y'])
     DISPLAYSURF.blit(scoreSurf, scoreRect)
 
+
 def drawTurbos(player_number, turbos, color):
     scoreSurf = BASICFONT.render('Turbos: %s' % (turbos), True, color)
     scoreRect = scoreSurf.get_rect()
     scoreRect.topleft = (INFO_POSITION[player_number]['x'], INFO_POSITION[player_number]['y'] + 20)
     DISPLAYSURF.blit(scoreSurf, scoreRect)    
+
 
 def drawLives(player_number, lives, color):
     scoreSurf = BASICFONT.render('Lives: %s' % (lives), True, color)
@@ -1187,7 +1194,8 @@ def drawLives(player_number, lives, color):
     scoreRect.topleft = (INFO_POSITION[player_number]['x'], INFO_POSITION[player_number]['y'] + 40)
     DISPLAYSURF.blit(scoreSurf, scoreRect)
 
-def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo=False):
+
+def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo=False, is_visible=True):
     cc = 0
     for coord in wormCoords:
         x = coord['x'] * CELLSIZE
@@ -1204,6 +1212,9 @@ def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo
 
         if is_turbo:
             color = getPulseColor(color, WHITE, 1.0)
+
+        if not is_visible:
+            color = BLACK
             
         wormSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
         pygame.draw.rect(DISPLAYSURF, color, wormSegmentRect)
@@ -1220,7 +1231,10 @@ def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo
 
             if is_shrinking:
                 color = getPulseColor(color, BLACK, 2.0)
-                
+
+            if not is_visible:
+                color = BLACK
+
             wormInnerSegmentRect = pygame.Rect(x + 4, y + 4, CELLSIZE - 8, CELLSIZE - 8)
             pygame.draw.rect(DISPLAYSURF, color, wormInnerSegmentRect)
             
