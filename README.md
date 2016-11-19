@@ -1,8 +1,9 @@
 # WormyWars
-Multiplayer worm/snake/nibbles game using pygame
+Multi-player worm/snake/nibbles game using pygame.
 
-You'll need to install pygame.
+Eat apples to grow in length and get points.
 
+Other fruits have special powers!
 
 Directions:
 
@@ -18,3 +19,8 @@ At the start screen, you can type:
 At any time you can press:
 -  F5: to reset the game
 - Esc: to exit
+
+
+Installation:
+
+You'll need to install pygame.
