@@ -4,7 +4,9 @@
 # http://inventwithpython.com/pygame
 # Released under a "Simplified BSD" license
 
-import random, pygame, sys
+import random
+import pygame
+import sys
 from pygame.locals import *
 
 NUM_LIVES = 3
@@ -104,7 +106,7 @@ ALL_UPS = [K_UP, K_w, K_i, K_KP8]
 ALL_DOWNS = [K_DOWN, K_s, K_k, K_KP5]
 WORM_COLORS = [GREEN, BLUE, RED, LIGHTGRAY]
 
-HEAD = 0 # syntactic sugar: index of the worm's head
+HEAD = 0  # syntactic sugar: index of the worm's head
 
 GLOBAL_TIME = 0.0
 
