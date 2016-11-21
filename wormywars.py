@@ -86,6 +86,8 @@ YELLOW    = (255, 255,   0)
 GOLD      = (255, 215,   0)
 BGCOLOR = BLACK
 
+TITLE_COLORS = [DARKGREEN, BLACK, RED, BLACK, LIGHTGRAY, BLACK, BLUE, BLACK]
+
 UP = 'up'
 DOWN = 'down'
 LEFT = 'left'
@@ -1123,13 +1125,16 @@ def showStartScreen():
         GLOBAL_TIME = time.time() - start_time
         DISPLAYSURF.fill(BGCOLOR)
 
+        color = getPulseColor([BLACK, PURPLE], pulse_time=2.0)
+        titleSurf2 = titleFont.render('Wormy Wars!', True, color)
+
         rotatedSurf2 = pygame.transform.rotate(titleSurf2, degrees2)
         rotatedRect2 = rotatedSurf2.get_rect()
         rotatedRect2.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
         DISPLAYSURF.blit(rotatedSurf2, rotatedRect2)
 
         # Get color for non-rotating title
-        color = getPulseColor([DARKGREEN, RED, LIGHTGRAY, BLUE], pulse_time=2.0)
+        color = getPulseColor(TITLE_COLORS, pulse_time=8.0)
         titleSurf1 = titleFont.render('Wormy Wars!', True, color)
 
         rotatedSurf1 = pygame.transform.rotate(titleSurf1, degrees1)
@@ -1266,9 +1271,10 @@ def getPulseColor(colors, pulse_time=2.0):
     one_color_time = pulse_time/num_colors
 
     mod_time = (GLOBAL_TIME % pulse_time)
-    ix1 = int(mod_time/one_color_time)
+    norm_time = mod_time/one_color_time
+    ix1 = int(norm_time)
     ix2 = (ix1+1) % num_colors
-    fraction = mod_time - ix1*one_color_time
+    fraction = norm_time - ix1
 
     use_color = list(colors[0])
     for ii in range(3):
