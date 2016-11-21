@@ -18,7 +18,7 @@ DEATH_TIME = 1.0            # in seconds
 
 GRAPE_APPEAR_TIME = 20      # in seconds
 GRAPE_POINTS = 17
-NUM_TICKS_IN_GRAPE = 25     # in ticks (how long does it last)
+NUM_TICKS_IN_GRAPE = 35     # in ticks (how long does it last)
 
 BANANA_APPEAR_TIME = 10     # in seconds
 BANANA_POINTS = 10
@@ -127,19 +127,25 @@ def main():
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     pygame.display.set_caption('Wormy Wars!')
 
+    num_players = 1
+    num_robots = 0
+
     key = showStartScreen()
-            
+
+    # Keep playing more games until escape
     while True:
-        num_players = 1
-        num_robots = 0
         if (key == K_1):
             num_players = 1
+            num_robots = 0
         elif (key == K_2):
             num_players = 2
+            num_robots = 0
         elif (key == K_3):
             num_players = 3
+            num_robots = 0
         elif (key == K_4):
             num_players = 4
+            num_robots = 0
         elif (key == K_F1):
             num_players = 1
             num_robots = 1
@@ -311,24 +317,16 @@ def runGame(num_players, num_robots=0):
         # Handle Robots
         for ii in range(num_players):
             if is_robot[ii] and is_alive[ii]:
-                #visibleWormCoords = allVisibleWormCoords(allWormsCoords, is_alive, invisible_ticks)
+                visibleWormCoords = allVisibleWormCoords(allWormsCoords, is_alive, invisible_ticks)
                 #visibleCoords = makeCoordsList(portalCoords) + visibleWormCoords
-
-                visibleWorms = allVisibleWormNumbers(is_alive, invisible_ticks)
-                otherWormCoords = []
-                otherWormDirections = []
-                # TODO: Cleanup!
-                for mm in visibleWorms:
-                    otherWormCoords.append(allWormsCoords[mm])
-                    otherWormDirections.append(directions[mm])
-
-                visibleCoords = makeCoordsList(portalCoords) + makeCoordsList(otherWormCoords)
                 fruits = [banana, grape, lime, blueberry, golden_apple]
 
                 if ii%2 == 0:
-                    directions[ii] = robot_link(ii, allWormsCoords, directions, apple, visibleCoords, is_alive, fruits)
+                    directions[ii] = robot_1(ii, allWormsCoords, visibleWormCoords, directions, apple,
+                                             makeCoordsList(portalCoords), is_alive, fruits)
                 else:
-                    directions[ii] = robot_daddy(ii, allWormsCoords, directions, apple, visibleCoords, is_alive, fruits)
+                    directions[ii] = robot_2(ii, allWormsCoords, visibleWormCoords, directions, apple,
+                                             makeCoordsList(portalCoords), is_alive, fruits)
                
         for event in pygame.event.get(): # event handling loop
 
@@ -704,7 +702,8 @@ def runGame(num_players, num_robots=0):
             
             return winning_player  # game over
 
-def robot_link(worm_num, allWormCoords, current_directions, apple, existingCoords, is_alive, fruits):
+
+def robot_1(worm_num, allWormCoords, visibleWormCoords, current_directions, apple, portalCoords, is_alive, fruits):
 
     wormCoords = allWormCoords[worm_num]
     current_direction = current_directions[worm_num]
@@ -730,11 +729,17 @@ def robot_link(worm_num, allWormCoords, current_directions, apple, existingCoord
         newHead = getNewHead(DIRECTIONS[jj], wormCoords)
         found_hit = False
         
-        # check if the worm will hit its body, other worm bodies, or portals
-        for coords in existingCoords:
+        # check if the worm will hit its body, other worm bodies
+        for coords in visibleWormCoords:
             if coords['x'] == newHead['x'] and coords['y'] == newHead['y']:
                 found_hit = True
                 goodness[jj] -= 90   # A hit is not a good choice.
+
+        # check if the worm will hit a portal
+        for coords in portalCoords:
+            if coords['x'] == newHead['x'] and coords['y'] == newHead['y']:
+                found_hit = True
+                goodness[jj] -= 10   # A portal is an uncertain good choice.
 
         # check if the worm will hit the edge
         if not found_hit:
@@ -759,7 +764,7 @@ def robot_link(worm_num, allWormCoords, current_directions, apple, existingCoord
     # print "new_direction: {}".format(new_direction)
     return new_direction
 
-def robot_daddy(worm_num, allWormCoords, current_directions, apple, existingCoords, is_alive, fruits):
+def robot_2(worm_num, allWormCoords, visibleWormCoords, current_directions, apple, portalCoords, is_alive, fruits):
 
     wormCoords = allWormCoords[worm_num]
     current_direction = current_directions[worm_num]
@@ -794,11 +799,17 @@ def robot_daddy(worm_num, allWormCoords, current_directions, apple, existingCoor
 ##        if isFruitInThisDirection(d[jj], wormCoords, fruits):
 ##            goodness[jj] += 100.0
         
-        # check if the worm will hit its body, other worm bodies, or portals
-        for coords in existingCoords:
+        # check if the worm will hit its body, other worm bodies
+        for coords in visibleWormCoords:
             if coords['x'] == newHead['x'] and coords['y'] == newHead['y']:
                 found_hit = True
                 goodness[jj] -= 90.0   # A hit is not a good choice.
+
+        # check if the worm will hit a portal
+        for coords in portalCoords:
+            if coords['x'] == newHead['x'] and coords['y'] == newHead['y']:
+                found_hit = True
+                goodness[jj] -= 10   # A portal is an uncertain good choice.
 
         # check if the worm will hit the edge
         if not found_hit:
@@ -830,7 +841,7 @@ def robot_daddy(worm_num, allWormCoords, current_directions, apple, existingCoor
             # That would be the alternate direction from the new head and the opposite of the alternate
             sideCheck1 = getNewHead(D_ALTERNATE[jj], [newHead])
             sideCheck2 = getNewHead(D_ALT_ALT[jj], [newHead])
-            if sideCheck1 in existingCoords and sideCheck2 in existingCoords:
+            if sideCheck1 in visibleWormCoords and sideCheck2 in visibleWormCoords:
                 # print "tunnel warning"
                 goodness[jj] -= 20.0
                 
