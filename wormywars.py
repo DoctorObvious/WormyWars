@@ -730,7 +730,7 @@ def robot_1(worm_num, allWormCoords, visibleWormCoords, current_directions, appl
         found_hit = False
         
         # check if the worm will hit its body, other worm bodies
-        for coords in visibleWormCoords:
+        for coords in visibleWormCoords + wormCoords:
             if coords['x'] == newHead['x'] and coords['y'] == newHead['y']:
                 found_hit = True
                 goodness[jj] -= 90   # A hit is not a good choice.
@@ -739,7 +739,7 @@ def robot_1(worm_num, allWormCoords, visibleWormCoords, current_directions, appl
         for coords in portalCoords:
             if coords['x'] == newHead['x'] and coords['y'] == newHead['y']:
                 found_hit = True
-                goodness[jj] -= 10   # A portal is an uncertain good choice.
+                goodness[jj] -= 25   # A portal is an uncertain good choice.
 
         # check if the worm will hit the edge
         if not found_hit:
@@ -765,7 +765,6 @@ def robot_1(worm_num, allWormCoords, visibleWormCoords, current_directions, appl
     return new_direction
 
 def robot_2(worm_num, allWormCoords, visibleWormCoords, current_directions, apple, portalCoords, is_alive, fruits):
-
     wormCoords = allWormCoords[worm_num]
     current_direction = current_directions[worm_num]
 
@@ -800,7 +799,7 @@ def robot_2(worm_num, allWormCoords, visibleWormCoords, current_directions, appl
 ##            goodness[jj] += 100.0
         
         # check if the worm will hit its body, other worm bodies
-        for coords in visibleWormCoords:
+        for coords in visibleWormCoords + wormCoords:
             if coords['x'] == newHead['x'] and coords['y'] == newHead['y']:
                 found_hit = True
                 goodness[jj] -= 90.0   # A hit is not a good choice.
@@ -809,7 +808,7 @@ def robot_2(worm_num, allWormCoords, visibleWormCoords, current_directions, appl
         for coords in portalCoords:
             if coords['x'] == newHead['x'] and coords['y'] == newHead['y']:
                 found_hit = True
-                goodness[jj] -= 10   # A portal is an uncertain good choice.
+                goodness[jj] -= 25   # A portal is an uncertain good choice.
 
         # check if the worm will hit the edge
         if not found_hit:
