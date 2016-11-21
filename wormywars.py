@@ -875,6 +875,7 @@ def preferDirectionToFruit(wormCoords, fruit, goodness, scale=1.0):
 
     return goodness
 
+
 def findExistingFruits(fruits):
     existingFruits = []
     for fruit in fruits:
@@ -972,6 +973,7 @@ def findMinCoord(coords, key):
 
     return useVal
 
+
 def findMaxCoord(coords, key):
     useVal = 0
     for coord in coords:
@@ -979,6 +981,7 @@ def findMaxCoord(coords, key):
             useVal = coord[key]
 
     return useVal
+
 
 def isFruitInThisDirection(direction, wormCoords, fruits):
     newHead = getNewHead(direction, wormCoords)
@@ -988,6 +991,7 @@ def isFruitInThisDirection(direction, wormCoords, fruits):
                 return True
 
     return False
+
 
 def coordsSafe(newCoords, existingCoords):
     for newCoord in newCoords:
@@ -1004,6 +1008,7 @@ def getSafeFruitLocation(existingCoords):
         fruit = getRandomLocation() # set a new apple somewhere
         
     return fruit
+
 
 def getTailDirection(wormCoords):
     last = len(wormCoords)-1
@@ -1086,7 +1091,7 @@ def allVisibleWormNumbers(is_alive, invisible_ticks):
         
     return nums
 
-# KRT 14/06/2012 rewrite event detection to deal with mouse use
+
 def checkForKeyPress():
     for event in pygame.event.get():
         if event.type == QUIT:      #event is quit 
@@ -1102,26 +1107,35 @@ def checkForKeyPress():
     
 def showStartScreen():
     titleFont = pygame.font.Font('freesansbold.ttf', 100)
-    titleSurf1 = titleFont.render('Wormy Wars!', True, WHITE, DARKGREEN)
-    titleSurf2 = titleFont.render('Wormy Wars!', True, GREEN)
+    # titleSurf1 = titleFont.render('Wormy Wars!', True, WHITE, DARKGREEN)
+    titleSurf1 = titleFont.render('Wormy Wars!', True, WHITE)
+    titleSurf2 = titleFont.render('Wormy Wars!', True, PURPLE)
 
     degrees1 = 0
     degrees2 = 0
     
     #KRT 14/06/2012 rewrite event detection to deal with mouse use
     pygame.event.get()  #clear out event queue
-    
+    start_time = time.time()
+    global GLOBAL_TIME
+
     while True:
+        GLOBAL_TIME = time.time() - start_time
         DISPLAYSURF.fill(BGCOLOR)
-        rotatedSurf1 = pygame.transform.rotate(titleSurf1, degrees1)
-        rotatedRect1 = rotatedSurf1.get_rect()
-        rotatedRect1.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
-        DISPLAYSURF.blit(rotatedSurf1, rotatedRect1)
 
         rotatedSurf2 = pygame.transform.rotate(titleSurf2, degrees2)
         rotatedRect2 = rotatedSurf2.get_rect()
         rotatedRect2.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
         DISPLAYSURF.blit(rotatedSurf2, rotatedRect2)
+
+        # Get color for non-rotating title
+        color = getPulseColor([DARKGREEN, RED, LIGHTGRAY, BLUE], pulse_time=2.0)
+        titleSurf1 = titleFont.render('Wormy Wars!', True, color)
+
+        rotatedSurf1 = pygame.transform.rotate(titleSurf1, degrees1)
+        rotatedRect1 = rotatedSurf1.get_rect()
+        rotatedRect1.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
+        DISPLAYSURF.blit(rotatedSurf1, rotatedRect1)
 
         drawPressKeyMsg()
         #KRT 14/06/2012 rewrite event detection to deal with mouse use
@@ -1130,7 +1144,7 @@ def showStartScreen():
             return key
         pygame.display.update()
         FPSCLOCK.tick(FPS)
-        degrees1 += 3 # rotate by 3 degrees each frame
+        degrees1 += 0 # rotate by 3 degrees each frame
         degrees2 += 7 # rotate by 7 degrees each frame
 
 
@@ -1211,7 +1225,7 @@ def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo
                 color = DARKGREEN
 
         if is_turbo:
-            color = getPulseColor(color, WHITE, 1.0)
+            color = getPulseColor([color, WHITE], 1.0)
 
         if not is_visible:
             color = BLACK
@@ -1230,7 +1244,7 @@ def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo
                 color = wormColor           
 
             if is_shrinking:
-                color = getPulseColor(color, BLACK, 2.0)
+                color = getPulseColor([color, BLACK], 2.0)
 
             if not is_visible:
                 color = BLACK
@@ -1241,26 +1255,27 @@ def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo
         cc += 1
 
 def drawPortals(portalCoords):
-    use_color = getPulseColor(PURPLE, GREEN, 2.0) 
+    use_color = getPulseColor([PURPLE, GREEN], 2.0)
     for portal in portalCoords:
         drawPortal(portal, use_color)
 
 
-def getPulseColor(color1, color2, pulse_time=2.0):
-    half_time = pulse_time/2.0
-    use_color = list(color1)
-    
-    for ii in range(len(use_color)):
-        color_dist = color2[ii] - use_color[ii]
-        if (GLOBAL_TIME % pulse_time) < half_time:
-            # Ramp up
-            use_color[ii] = (GLOBAL_TIME % half_time)/half_time * color_dist + use_color[ii]
-        else:
-            # Ramp down
-            use_color[ii] = (GLOBAL_TIME % half_time)/half_time * (-color_dist) + color2[ii]
-    use_color = tuple(use_color)       
-    return use_color
 
+def getPulseColor(colors, pulse_time=2.0):
+    num_colors = len(colors)
+    one_color_time = pulse_time/num_colors
+
+    mod_time = (GLOBAL_TIME % pulse_time)
+    ix1 = int(mod_time/one_color_time)
+    ix2 = (ix1+1) % num_colors
+    fraction = mod_time - ix1*one_color_time
+
+    use_color = list(colors[0])
+    for ii in range(3):
+        use_color[ii] = int((1.0-fraction) * float(colors[ix1][ii]) + fraction * float(colors[ix2][ii]))
+
+    use_color = tuple(use_color)
+    return use_color
 
 def drawPortal(portalCoords, color):
     for coord in portalCoords:
