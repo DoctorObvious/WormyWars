@@ -9,108 +9,8 @@ import pygame
 import sys
 import time
 from pygame.locals import *
-
-NUM_LIVES = 3
-FPS = 8
-GROW_BY = 4
-DOUBLE_CLICK_TIME = 0.3     # in seconds
-DEATH_TIME = 1.0            # in seconds
-
-GRAPE_APPEAR_TIME = 20      # in seconds
-GRAPE_POINTS = 17
-NUM_TICKS_IN_GRAPE = 35     # in ticks (how long does it last)
-
-BANANA_APPEAR_TIME = 10     # in seconds
-BANANA_POINTS = 10
-
-NUM_TICKS_IN_TURBO = 14     # how long (in ticks) does it last
-NUM_TURBOS = 1
-
-GOLDEN_APPEAR_TIME = 30     # in seconds
-GOLDEN_DISAPPEAR_TIME = 5   # in seconds
-
-BLUEBERRY_APPEAR_TIME = 25     # in seconds
-BLUEBERRY_DISAPPEAR_TIME = 5   # in seconds
-BLUEBERRY_POINTS = 2
-NUM_SECS_IN_FREEZE = 3
-NUM_TICKS_IN_FREEZE = NUM_SECS_IN_FREEZE*FPS
-
-LIME_APPEAR_TIME = 42       # in seconds
-LIME_DISAPPEAR_TIME = 10    # in seconds
-LIME_POINTS = 10
-
-BAD_APPLE_TIME = 16         # how long before apple goes rotten. For 1 player
-SHRINK_TIME    = 1          # number of seconds for a segment to disappear
-
-WINDOWWIDTH = 900   # 640
-WINDOWHEIGHT = 700  # 480
-CELLSIZE = 20
-assert WINDOWWIDTH % CELLSIZE == 0, "Window width must be a multiple of cell size."
-assert WINDOWHEIGHT % CELLSIZE == 0, "Window height must be a multiple of cell size."
-CELLWIDTH = int(WINDOWWIDTH / CELLSIZE)
-CELLHEIGHT = int(WINDOWHEIGHT / CELLSIZE)
-
-# Where to start plotting scores and such
-INFO_POSITION = [{'x': WINDOWWIDTH - 110, 'y': 10},
-                 {'x': 20,                'y': 10},
-                 {'x': 20,                'y': WINDOWHEIGHT - 70},
-                 {'x': WINDOWWIDTH - 120, 'y': WINDOWHEIGHT - 70}]
-
-PORTAL_LENGTH = 3        # Must be odd
-PORTALS_PER_SIDE = 2
-LEFT_PORTAL_X = 2
-RIGHT_PORTAL_X = CELLWIDTH-3
-UP_PORTAL_Y = 2
-DOWN_PORTAL_Y = CELLHEIGHT-3
-
-SOUND_DIE = 'Taps_silly.wav'
-SOUND_HAPPY = 'happy.wav'
-SOUND_BEEP = 'quick_beep.wav'
-SOUND_REVERSE = 'reverse.wav'
-SOUND_LIFE = 'angelic.wav'
-SOUND_PORTAL = 'port.wav'
-
-#             R    G    B
-WHITE     = (255, 255, 255)
-BLACK     = (  0,   0,   0)
-RED       = (255,   0,   0)
-GREEN     = (  0, 255,   0)
-BLUE      = (  0,   0, 255)
-BLUE2     = ( 10,   0, 215)
-DARKGREEN = (  0, 155,   0)
-LIMEGREEN = ( 50, 205,  50)
-DARKGRAY  = ( 40,  40,  40)
-LIGHTGRAY = ( 80,  80,  80)
-PURPLE    = (127,   0, 255)
-YELLOW    = (255, 255,   0)
-GOLD      = (255, 215,   0)
-BGCOLOR = BLACK
-
-TITLE_COLORS = [DARKGREEN, BLACK, RED, BLACK, LIGHTGRAY, BLACK, BLUE, BLACK]
-
-UP = 'up'
-DOWN = 'down'
-LEFT = 'left'
-RIGHT = 'right'
-
-DIRECTIONS  = [LEFT,  RIGHT, UP,    DOWN]
-D_OPPOSITE  = [RIGHT, LEFT,  DOWN,  UP]
-D_ALTERNATE = [DOWN,  UP,    LEFT,  RIGHT]
-D_ALT_ALT   = [UP,    DOWN,  RIGHT, LEFT]
-
-IX_L = DIRECTIONS.index(LEFT)
-IX_R = DIRECTIONS.index(RIGHT)
-IX_U = DIRECTIONS.index(UP)
-IX_D = DIRECTIONS.index(DOWN)
-
-# Worm controls
-ALL_LEFTS = [K_LEFT, K_a, K_j, K_KP4]
-ALL_RIGHTS = [K_RIGHT, K_d, K_l, K_KP6]
-ALL_UPS = [K_UP, K_w, K_i, K_KP8]
-ALL_DOWNS = [K_DOWN, K_s, K_k, K_KP5]
-WORM_COLORS = [GREEN, BLUE, RED, LIGHTGRAY]
-
-HEAD = 0  # syntactic sugar: index of the worm's head
+from settings import *
+import worm_class
 
 GLOBAL_TIME = 0.0
 
@@ -164,7 +64,7 @@ def main():
         elif (key == K_r):
             num_players = 4
             num_robots = 4
-        winning_player = runGame(num_players, num_robots)
+        winning_player = run_game(num_players, num_robots)
         key = showGameOverScreen(winning_player, WORM_COLORS[winning_player[0]-1])
 
 def wormBirth(player_number, existCoords=[]):
@@ -174,8 +74,8 @@ def wormBirth(player_number, existCoords=[]):
     for y_try in range(4, 26):
         starty = y_try + 7*player_number
         starty = ((starty-4) % 22) + 4
-        wormCoords = wormStartingCoords(startx, starty)
-        if coordsSafe(wormCoords, existCoords):
+        wormCoords = worm_starting_coords(startx, starty)
+        if are_coords_safe(wormCoords, existCoords):
             break
         
     direction = RIGHT
@@ -190,10 +90,22 @@ def wormBirth(player_number, existCoords=[]):
     
     return wormCoords, direction, is_alive, num_to_grow, num_turbos, turbo_ticks, invisible_ticks, freeze_ticks, is_shrinking
 
-def wormStartingCoords(startx, starty):
-    return [{'x': startx,     'y': starty},
-            {'x': startx - 1, 'y': starty},
-            {'x': startx - 2, 'y': starty}]
+def get_safe_starting_coords(player_number, existing_coords=None):
+    start_x = 5
+    worm_coords = []
+    for y_try in range(4, 26):
+        start_y = y_try + 7*player_number
+        start_y = ((start_y-4) % 22) + 4
+        worm_coords = worm_starting_coords(start_x, start_y)
+        if are_coords_safe(worm_coords, existing_coords):
+            break
+
+    return worm_coords
+
+def worm_starting_coords(start_x, start_y):
+    return [{'x': start_x, 'y': start_y},
+            {'x': start_x - 1, 'y': start_y},
+            {'x': start_x - 2, 'y': start_y}]
 
     
 def getPortalCoords():
@@ -233,8 +145,13 @@ def getPortalCoords():
     return portalCoords, portalNames
     
 
-def runGame(num_players, num_robots=0):
+def run_game(num_players, num_robots=0):
     # Create worms
+    worms = []
+    for ii in range(num_players):
+        starting_coords = get_safe_starting_coords(player_number=ii, existing_coords=None)
+        worms.append(worm_class.Worm(WORM_COLORS[ii], starting_coords))
+
     allWormsCoords = []
     allStartX = []
     allStartY = []
@@ -267,7 +184,7 @@ def runGame(num_players, num_robots=0):
         allWormsCoords.insert(0, wormCoords)
         directions.insert(0, direction)
 
-        if (ii >= num_players-num_robots):
+        if ii >= num_players - num_robots:
             is_robot[ii] = True
         
     # Get the portal coordinates
@@ -304,7 +221,7 @@ def runGame(num_players, num_robots=0):
     lime_time = -1000
 
 
-    while True: # main game loop
+    while True:  # main game loop
         frame_count += 1.0
         global GLOBAL_TIME
         GLOBAL_TIME = float(frame_count)/FPS
@@ -328,12 +245,12 @@ def runGame(num_players, num_robots=0):
                     directions[ii] = robot_2(ii, allWormsCoords, visibleWormCoords, directions, apple,
                                              makeCoordsList(portalCoords), is_alive, fruits)
                
-        for event in pygame.event.get(): # event handling loop
+        for event in pygame.event.get():  # event handling loop
 
             if event.type == QUIT:
                  terminate()
 
-            # See how keypresses affect direction for each worm!
+            # See how key presses affect direction for each worm!
             for ii in range(num_players):
                  direction = directions[ii]
                  new_direction = direction
@@ -509,7 +426,7 @@ def runGame(num_players, num_robots=0):
                             scores[ii] += GROW_BY
                             is_shrinking[ii] = False
 
-                    if len(golden_apple)>0:
+                    if len(golden_apple) > 0:
                         # check if a worm has eaten a golden_apple
                         if wormCoords[HEAD]['x'] == golden_apple['x'] and wormCoords[HEAD]['y'] == golden_apple['y']:
                             last_golden_time = GLOBAL_TIME
@@ -532,7 +449,7 @@ def runGame(num_players, num_robots=0):
                         if wormCoords[HEAD]['x'] == grape['x'] and wormCoords[HEAD]['y'] == grape['y']:
                             last_grape_time = GLOBAL_TIME
                             sound_happy.play()
-                            invisible_ticks[ii] += NUM_TICKS_IN_GRAPE
+                            invisible_ticks[ii] += NUM_INVISIBLE_TICKS
                             scores[ii] += GRAPE_POINTS
                             grape = []
 
@@ -553,7 +470,7 @@ def runGame(num_players, num_robots=0):
                         # Don't delete the tail, grow instead!
                         num_to_grow[ii] -= 1
                     else:
-                        del wormCoords[-1] # remove worm's tail segment
+                        del wormCoords[-1]  # remove worm's tail segment
 
                     if is_shrinking[ii] and (GLOBAL_TIME - last_shrink_time[ii] > SHRINK_TIME):
                         last_shrink_time[ii] = GLOBAL_TIME
@@ -711,7 +628,11 @@ def robot_1(worm_num, allWormCoords, visibleWormCoords, current_directions, appl
     y_dist = apple['y'] - wormCoords[0]['y']
 
     # Give points to the best directions [LEFT, RIGHT, UP, DOWN]
-    goodness = [0, 0, 0, 0]
+    # Add a little randomness
+    rand_part = 10.0
+    goodness = [random.random()*rand_part, random.random()*rand_part,
+                random.random()*rand_part, random.random()*rand_part]
+
 
     # Give a very slight preference to the current direction, all else being equal
     goodness[DIRECTIONS.index(current_direction)] += 4
@@ -769,7 +690,10 @@ def robot_2(worm_num, allWormCoords, visibleWormCoords, current_directions, appl
     current_direction = current_directions[worm_num]
 
     # Give points to the best directions [LEFT, RIGHT, UP, DOWN]
-    goodness = [0, 0, 0, 0]
+    # Add a little randomness
+    rand_part = 10.0
+    goodness = [random.random()*rand_part, random.random()*rand_part,
+                random.random()*rand_part, random.random()*rand_part]
 
     # Give a very slight preference to the current direction, all else being equal
     goodness[DIRECTIONS.index(current_direction)] += 4
@@ -1005,10 +929,13 @@ def isFruitInThisDirection(direction, wormCoords, fruits):
     return False
 
 
-def coordsSafe(newCoords, existingCoords):
-    for newCoord in newCoords:
-        for existingCoord in existingCoords:
-            if newCoord['x'] == existingCoord['x'] and newCoord['y'] == existingCoord['y']:
+def are_coords_safe(new_coords, existing_coords=None):
+    if existing_coords is None:
+        return True
+
+    for new_coord in new_coords:
+        for existing_coord in existing_coords:
+            if new_coord['x'] == existing_coord['x'] and new_coord['y'] == existing_coord['y']:
                 return False
     
     return True
@@ -1016,7 +943,7 @@ def coordsSafe(newCoords, existingCoords):
 
 def getSafeFruitLocation(existingCoords):
     fruit = getRandomLocation() # set a new apple somewhere
-    while (not coordsSafe([fruit], existingCoords)):
+    while (not are_coords_safe([fruit], existingCoords)):
         fruit = getRandomLocation() # set a new apple somewhere
         
     return fruit
@@ -1225,13 +1152,17 @@ def drawLives(player_number, lives, color):
 
 
 def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo=False, is_visible=True):
+    inner_size = CELLSIZE - 8
+    inner_offset = 4
+    outer_size = CELLSIZE
+
     cc = 0
     for coord in wormCoords:
         x = coord['x'] * CELLSIZE
         y = coord['y'] * CELLSIZE
 
         # Do outer blocks
-        if cc%2 == 0:
+        if cc % 2 == 0:
             color = wormColor
         else:
             if is_robot:
@@ -1245,7 +1176,7 @@ def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo
         if not is_visible:
             color = BLACK
             
-        wormSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+        wormSegmentRect = pygame.Rect(x, y, outer_size, outer_size)
         pygame.draw.rect(DISPLAYSURF, color, wormSegmentRect)
 
         # Do inner blocks
@@ -1264,7 +1195,7 @@ def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo
             if not is_visible:
                 color = BLACK
 
-            wormInnerSegmentRect = pygame.Rect(x + 4, y + 4, CELLSIZE - 8, CELLSIZE - 8)
+            wormInnerSegmentRect = pygame.Rect(x + inner_offset, y + inner_offset, inner_size, inner_size)
             pygame.draw.rect(DISPLAYSURF, color, wormInnerSegmentRect)
             
         cc += 1
@@ -1273,7 +1204,6 @@ def drawPortals(portalCoords):
     use_color = getPulseColor([PURPLE, GREEN], 2.0)
     for portal in portalCoords:
         drawPortal(portal, use_color)
-
 
 
 def getPulseColor(colors, pulse_time=2.0):
@@ -1292,6 +1222,7 @@ def getPulseColor(colors, pulse_time=2.0):
 
     use_color = tuple(use_color)
     return use_color
+
 
 def drawPortal(portalCoords, color):
     for coord in portalCoords:
