@@ -1,22 +1,82 @@
-import settings
+from settings import *
 import pygame
 import utilities as utils
-from worm_clock import *
+from game_clock import *
 
 HEAD = 0  # syntactic sugar: index of the worm's head
+
+
+def collect_worms_coords(worms):
+    coord_list = []
+    for worm in worms:
+        coord_list = coord_list + worm.coords
+
+    return coord_list
+
+
+def all_visible_worm_coords(worms):
+    coord_list = []
+    for worm in worms:
+        if worm.is_in_play and worm.is_visible():
+            coord_list = coord_list + worm.coords
+
+    return coord_list
+
+
+def all_visible_worm_nums(worms):
+    nums = []
+    for ii in range(len(worms)):
+        if worms[ii].is_in_play and worms[ii].is_visible():
+            nums.append(ii)
+
+    return nums
+
+
+def gather_visible_worms_info(worms):
+    nums = all_visible_worm_nums(worms)
+    worms_info = []
+    for ii in nums:
+        worms_info.append(worms[ii].get_worm_info())
+
+    return worms_info
+
+
+def get_new_head(use_direction, use_coords):
+
+    new_head = []
+    if use_direction == UP:
+        new_head = {'x': use_coords[HEAD]['x'], 'y': use_coords[HEAD]['y'] - 1}
+    elif use_direction == DOWN:
+        new_head = {'x': use_coords[HEAD]['x'], 'y': use_coords[HEAD]['y'] + 1}
+    elif use_direction == LEFT:
+        new_head = {'x': use_coords[HEAD]['x'] - 1, 'y': use_coords[HEAD]['y']}
+    elif use_direction == RIGHT:
+        new_head = {'x': use_coords[HEAD]['x'] + 1, 'y': use_coords[HEAD]['y']}
+
+    return new_head  # return the head (don't add it) because it could be used for testing a path
+
+
+class WormInfo:
+
+    def __init__(self):
+        self.player_number = []
+        self.coords = []
+        self.direction = []
+        self.is_in_play = []
+
 
 class Worm:
 
     coords = []
-    direction = []
+    _direction = []
     num_lives = []
     score = []
-    is_alive = []
+    is_in_play = []
     num_to_grow = []
     num_turbos = []
-    turbo_ticks = []
-    freeze_ticks = []
-    invisible_ticks = []
+    turbo_end_time = []
+    freeze_end_time = []
+    invisible_end_time = []
     is_shrinking = []
 
     last_shrink_time = []
@@ -26,11 +86,13 @@ class Worm:
     # is_dying = []   TODO: Do we need this?
 
     is_robot = False
-    starting_turbos = settings.NUM_TURBOS
+    starting_turbos = NUM_TURBOS
 
-    def __init__(self, color, starting_coords):
-        self.color = color
-        self.num_lives = settings.NUM_LIVES
+    def __init__(self, worm_color, starting_coords, player_number):
+        self.is_in_play = True
+        self.color = worm_color
+        self.player_number = player_number
+        self.num_lives = NUM_LIVES
         self.score = 0
         self.last_shrink_time = -100
         self.last_press_time = -100
@@ -38,85 +100,148 @@ class Worm:
 
         self.birth(starting_coords)
 
-    def birth(self, starting_coords):
-        self.coords = starting_coords
-        self.is_alive = True
-        self.num_to_grow = 0
-        self.num_turbos = self.starting_turbos
-        self.turbo_ticks = 0
-        self.freeze_ticks = 0
-        self.invisible_ticks = 0
-        self.is_shrinking = False
+    def get_worm_info(self):
+        my_info = WormInfo()
+        my_info.coords = self.coords
+        my_info.direction = self._direction
+        my_info.player_number = self.player_number
 
-    def kill(self):
-        self.num_lives -= 1
+        return my_info
+
+    def birth(self, starting_coords):
+        if self.is_in_play:
+            self.coords = starting_coords
+            self.is_in_play = True
+            self.num_to_grow = 0
+            self.num_turbos = self.starting_turbos
+            self.turbo_end_time = 0
+            self.freeze_end_time = 0
+            self.invisible_end_time = 0
+            self.is_shrinking = False
+            self._direction = RIGHT
+        else:
+            self.coords = []
+
+    def die(self):
         self.is_shrinking = False
-        self.turbo_ticks = 0
-        pass
+        self.turbo_end_time = 0
+        self.freeze_end_time = 0
+        self.invisible_end_time = 0
+
+        if self.num_lives > 0:
+            self.num_lives -= 1
+            if self.num_lives <= 0:
+                self.is_in_play = False
+
+    def terminate(self):
+        self.num_lives = 0
+        self.is_in_play = False
 
     def is_visible(self):
-        return self.invisible_ticks == 0
+        return current_time() > self.invisible_end_time
     
-    def is_turbo(self):
-        return self.turbo_ticks > 0
+    def is_in_turbo(self):
+        return current_time() < self.turbo_end_time
+
+    def is_frozen(self):
+        return current_time() < self.freeze_end_time
+
+    def freeze(self):
+        if self.is_frozen():
+            self.freeze_end_time += NUM_SECS_IN_FREEZE
+        else:
+            self.freeze_end_time = current_time() + NUM_SECS_IN_FREEZE
+
+    def make_invisible(self):
+        if self.is_visible():
+            self.invisible_end_time = current_time() + NUM_SECS_IN_INVISIBLE
+        else:
+            self.invisible_end_time += NUM_SECS_IN_INVISIBLE
+
+    def go_turbo(self):
+        if self.num_turbos > 0:
+            if self.is_in_turbo():
+                self.turbo_end_time += NUM_SECS_IN_TURBO
+            else:
+                self.turbo_end_time = current_time() + NUM_SECS_IN_TURBO
+
+            self.num_turbos -= 1
+
+    def add_turbo(self):
+        self.num_turbos += 1
+
+    def add_score(self, new_score):
+        self.score += new_score
     
     def draw(self, display_surface):
-        inner_size = settings.CELLSIZE - 8
-        inner_offset = 4
-        outer_size = settings.CELLSIZE
+        if self.is_in_play:
+            inner_size = CELLSIZE - 8
+            inner_offset = 4
+            outer_size = CELLSIZE
 
-        cc = 0
-        for coord in self.coords:
-            x = coord['x'] * settings.CELLSIZE
-            y = coord['y'] * settings.CELLSIZE
+            cc = 0
+            for coord in self.coords:
+                x = coord['x'] * CELLSIZE
+                y = coord['y'] * CELLSIZE
 
-            # Do outer blocks
-            if cc % 2 == 0:
-                color = self.color
-            else:
-                if self.is_robot:
-                    color = settings.PURPLE
-                else:
-                    color = settings.DARKGREEN
-
-            if self.is_turbo():
-                color = utils.get_shifting_color([color, settings.WHITE], 1.0)
-
-            if not self.is_visible:
-                color = settings.BLACK
-
-            worm_outer_rect = pygame.Rect(x, y, outer_size, outer_size)
-            pygame.draw.rect(display_surface, color, worm_outer_rect)
-
-            # Do inner blocks
-            if cc > 0:
+                # Do outer blocks
                 if cc % 2 == 0:
-                    if self.is_robot:
-                        color = settings.PURPLE
-                    else:
-                        color = settings.DARKGREEN
+                    block_color = self.color
                 else:
-                    color = self.color
+                    if self.is_robot:
+                        block_color = PURPLE
+                    else:
+                        block_color = DARKGREEN
 
-                if self.is_shrinking:
-                    color = utils.get_shifting_color([color, settings.BLACK], 2.0)
+                if self.is_in_turbo():
+                    block_color = utils.get_shifting_color([block_color, WHITE], 1.0)
 
                 if not self.is_visible():
-                    color = settings.BLACK
+                    block_color = BLACK
 
-                worm_inner_rect = pygame.Rect(x + inner_offset, y + inner_offset, inner_size, inner_size)
-                pygame.draw.rect(display_surface, color, worm_inner_rect)
+                worm_outer_rect = pygame.Rect(x, y, outer_size, outer_size)
+                pygame.draw.rect(display_surface, block_color, worm_outer_rect)
 
-            cc += 1
+                # Do inner blocks
+                if cc > 0:
+                    if cc % 2 == 0:
+                        if self.is_robot:
+                            block_color = PURPLE
+                        else:
+                            block_color = DARKGREEN
+                    else:
+                        block_color = self.color
+
+                    if self.is_shrinking:
+                        block_color = utils.get_shifting_color([block_color, BLACK], 2.0)
+
+                    if not self.is_visible():
+                        block_color = BLACK
+
+                    worm_inner_rect = pygame.Rect(x + inner_offset, y + inner_offset, inner_size, inner_size)
+                    pygame.draw.rect(display_surface, block_color, worm_inner_rect)
+
+                cc += 1
 
     def set_direction(self, direction):
-        self.direction = direction
+        self._direction = direction
+
+    def get_direction(self):
+        return self._direction
+
+    def choose_direction(self, visible_worms_info, portal_coords, apple, fruits):
+        if not self.is_robot:
+            raise TypeError("Only a WormBot can choose its direction")
 
     def move(self):
-        # move the worm by adding a segment in the direction it is moving
-        new_head = self.get_new_head()
 
-        # Grow new head
+        did_die = False
+
+        if self.is_frozen():
+            return
+
+        # move the worm by adding a segment in the direction it is moving
+        new_head = get_new_head(self._direction, self.coords)
         self.coords.insert(0, new_head)
         
         # delete the tail unless growing
@@ -126,47 +251,85 @@ class Worm:
         else:
             del self.coords[-1]  # remove worm's tail segment
 
-        if self.is_shrinking and (elapsed_time() - self.last_shrink_time > settings.SHRINK_TIME):
-            self.last_shrink_time = elapsed_time()
+        if self.is_shrinking and (current_time() - self.last_shrink_time > SHRINK_SEG_TIME):
+            self.last_shrink_time = current_time()
             if len(self.coords) == 1:
-                self.kill()
-                return
+                self.die()
+                did_die = True
             else:
                 del self.coords[-1]     # remove worm's tail segment
 
+        return did_die
 
     def grow(self, num_to_grow):
+        self.is_shrinking = False
         self.num_to_grow += num_to_grow
-        
-    def get_new_head(self):
-        if self.direction == settings.UP:
-            new_head = {'x': self.coords[HEAD]['x'], 'y': self.coords[HEAD]['y'] - 1}
-        elif self.direction == settings.DOWN:
-            new_head = {'x': self.coords[HEAD]['x'], 'y': self.coords[HEAD]['y'] + 1}
-        elif self.direction == settings.LEFT:
-            new_head = {'x': self.coords[HEAD]['x'] - 1, 'y': self.coords[HEAD]['y']}
-        elif self.direction == settings.RIGHT:
-            new_head = {'x': self.coords[HEAD]['x'] + 1, 'y': self.coords[HEAD]['y']}
-    
-        return new_head  # return the head (don't add it) because it could be used for testing a path
+
+    def shrink(self):
+        self.num_to_grow = 0
+        self.is_shrinking = True
 
     def add_life(self):
         self.num_lives += 1
 
     def reverse(self):
-        pass
+        tail_direction = self.get_tail_direction()
+        self._direction = D_OPPOSITE[DIRECTIONS.index(tail_direction)]
+        self.coords.reverse()
+
+    def get_tail_direction(self):
+        last = len(self.coords)-1
+        last_m1 = last - 1
+
+        if self.coords[last]['y'] == self.coords[last_m1]['y']:
+            if self.coords[last]['x'] > self.coords[last_m1]['x']:
+                direction = LEFT
+            else:
+                direction = RIGHT
+        else:
+            if self.coords[last]['y'] > self.coords[last_m1]['y']:
+                direction = UP
+            else:
+                direction = DOWN
+
+        return direction
 
     def switcheroo(self):
-        pass
+        pass   # TODO:!
 
-    def freeze(self):
-        self.freeze_ticks += settings.NUM_TICKS_IN_FREEZE
 
-    def make_invisible(self):
-        self.invisible_ticks += settings.NUM_INVISIBLE_TICKS
+def prefer_direction_to_fruit(worm_coords, fruit, goodness, scale=1.0):
+    x_dist, y_dist = utils.xy_distance_to_target(worm_coords[HEAD], fruit)
+    preferred_x_ix = None
+    preferred_y_ix = None
+    if x_dist > 0:
+        goodness[IX_R] += 5.0 * scale
+        preferred_x_ix = IX_R
+    elif x_dist < 0:
+        goodness[IX_L] += 5.0 * scale
+        preferred_x_ix = IX_L
 
-    def turbo(self):
-        self.turbo_ticks += settings.NUM_TICKS_IN_TURBO
+    if y_dist > 0:
+        goodness[IX_D] += 5.0 * scale
+        preferred_y_ix = IX_D
+    elif y_dist < 0:
+        goodness[IX_U] += 5.0 * scale
+        preferred_y_ix = IX_U
 
-    
+    # Add some goodness to the direction most in the direction of the target.
+    # Add a little goodness to the alternate directions in case the preferred direction isn't allowed
+    if abs(x_dist) > abs(y_dist):
+        # Some diagonal
+        # goodness[preferred_x_ix] += 10 * (1 - int(y_dist/x_dist))
+        # More straight
+        goodness[preferred_x_ix] += 5.0 * scale
+        goodness[DIRECTIONS.index(D_ALTERNATE[preferred_x_ix])] += 4.0 * scale
 
+    else:
+        # Some diagonal
+        # goodness[preferred_y_ix] += 10 * (1 - int(x_dist/y_dist))
+        # More straight
+        goodness[preferred_y_ix] += 5.0 * scale
+        goodness[DIRECTIONS.index(D_ALTERNATE[preferred_y_ix])] += 4.0 * scale
+
+    return goodness

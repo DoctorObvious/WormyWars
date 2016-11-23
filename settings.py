@@ -4,34 +4,33 @@ from pygame.locals import *
 NUM_LIVES = 3
 FPS = 8
 GROW_BY = 4
-DOUBLE_CLICK_TIME = 0.3     # in seconds
-DEATH_TIME = 1.0            # in seconds
+DOUBLE_CLICK_TIME = 0.3         # in seconds
+DEATH_TIME = 1.0                # in seconds
 
-GRAPE_APPEAR_TIME = 20      # in seconds
+GRAPE_APPEAR_TIME = 20.         # in seconds
 GRAPE_POINTS = 17
-NUM_INVISIBLE_TICKS = 35     # in ticks (how long does it last)
+NUM_SECS_IN_INVISIBLE = 5.0     # in seconds (how long does it last)
 
-BANANA_APPEAR_TIME = 10     # in seconds
+BANANA_APPEAR_TIME = 10.        # in seconds
 BANANA_POINTS = 10
 
-NUM_TICKS_IN_TURBO = 14     # how long (in ticks) does it last
+NUM_SECS_IN_TURBO = 1.75        # how long does it last
 NUM_TURBOS = 1
 
-GOLDEN_APPEAR_TIME = 30     # in seconds
-GOLDEN_DISAPPEAR_TIME = 5   # in seconds
+GOLDEN_APPEAR_TIME = 30.        # in seconds
+GOLDEN_DISAPPEAR_TIME = 5.      # in seconds
 
-BLUEBERRY_APPEAR_TIME = 25     # in seconds
-BLUEBERRY_DISAPPEAR_TIME = 5   # in seconds
+BLUEBERRY_APPEAR_TIME = 25.     # in seconds
+BLUEBERRY_DISAPPEAR_TIME = 5    # in seconds
 BLUEBERRY_POINTS = 2
-NUM_SECS_IN_FREEZE = 3
-NUM_TICKS_IN_FREEZE = NUM_SECS_IN_FREEZE*FPS
+NUM_SECS_IN_FREEZE = 3.
 
-LIME_APPEAR_TIME = 42       # in seconds
-LIME_DISAPPEAR_TIME = 10    # in seconds
+LIME_APPEAR_TIME = 42.          # in seconds
+LIME_DISAPPEAR_TIME = 10.       # in seconds
 LIME_POINTS = 10
 
-BAD_APPLE_TIME = 16         # how long before apple goes rotten. For 1 player
-SHRINK_TIME    = 1          # number of seconds for a segment to disappear
+BAD_APPLE_TIME = 16.            # how long before apple goes rotten. For 1 player
+SHRINK_SEG_TIME = 1.            # number of seconds for a segment to disappear
 
 WINDOWWIDTH = 900   # 640
 WINDOWHEIGHT = 700  # 480
