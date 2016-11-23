@@ -150,6 +150,8 @@ def run_game(num_players, num_robots=0):
     sound_reverse = pygame.mixer.Sound(SOUND_REVERSE)
 
     do_switcheroo = False
+    do_switcheroo_effect = False
+    switcheroo_start_time = 0.0
         
     # Get the portal coordinates
     portal_coords, portal_names = get_portal_coords()
@@ -166,6 +168,7 @@ def run_game(num_players, num_robots=0):
     lime = []
 
     frame_count = 0.0
+    pause_end_time = 0.0
 
     # How long since the LAST appearance of a fruit
     last_grape_time = 0
@@ -182,234 +185,246 @@ def run_game(num_players, num_robots=0):
 
     while True:  # main game loop
         frame_count += 1.0
-        DISPLAYSURF.fill(BGCOLOR)
-        drawGrid()
+
+        if do_switcheroo_effect:
+            DISPLAYSURF.fill(get_pulse_color([BGCOLOR, LIMEGREEN], pulse_time=SWITCH_PAUSE_TIME,
+                                             pulse_start_time=switcheroo_start_time))
+        else:
+            DISPLAYSURF.fill(BGCOLOR)
+
+        draw_grid()
 
         keys_processed = [0] * num_players
         worm_died = [False] * num_players
 
-        # Handle robots based on current state of worms and board
-        visible_worms_info = gather_visible_worms_info(worms)   # Gather before any of this frame's choices are made
-        fruits = [banana, grape, lime, blueberry, golden_apple]
-        for ii in range(num_players):
-            if worms[ii].is_robot and worms[ii].is_in_play:
-                worms[ii].choose_direction(visible_worms_info, portal_coords, apple, fruits)
+        if current_time() > pause_end_time:
+            do_switcheroo_effect = False
 
-        for event in pygame.event.get():  # event handling loop
-
-            if event.type == QUIT:
-                terminate()
-
-            # See how key presses affect direction for each worm!
+            # Handle robots based on current state of worms and board
+            visible_worms_info = gather_visible_worms_info(worms)   # Gather before any of this frame's choices are made
+            fruits = [banana, grape, lime, blueberry, golden_apple]
             for ii in range(num_players):
-                direction = worms[ii].get_direction()
-                new_direction = direction
+                if worms[ii].is_robot and worms[ii].is_in_play:
+                    worms[ii].choose_direction(visible_worms_info, portal_coords, apple, fruits)
 
-                if event.type == KEYDOWN:
-                    key_press = None
-                    if event.key == ALL_LEFTS[ii]:
-                        key_press = LEFT
-                        if direction != RIGHT:
-                            new_direction = LEFT
-                    elif event.key == ALL_RIGHTS[ii]:
-                        key_press = RIGHT
-                        if direction != LEFT:
-                            new_direction = RIGHT
-                    elif event.key == ALL_UPS[ii]:
-                        key_press = UP
-                        if direction != DOWN:
-                            new_direction = UP
-                    elif event.key == ALL_DOWNS[ii]:
-                        key_press = DOWN
-                        if direction != UP:
-                            new_direction = DOWN
-                    elif event.key == K_ESCAPE:
-                        terminate()
-                    elif event.key == K_F5:
-                        for worm in worms:
-                            worm.terminate()
+            for event in pygame.event.get():  # event handling loop
 
-                    if key_press == worms[ii].last_key_press \
-                            and current_time() - worms[ii].last_press_time < DOUBLE_CLICK_TIME:
-                        # Double click in same direction for turbo
-                        worms[ii].go_turbo()
+                if event.type == QUIT:
+                    terminate()
 
-                    # Only process one direction key per worm per drawing cycle.
-                    # Save others for next time.
-                    if key_press is not None:
-                        if new_direction != direction:
-                            if keys_processed[ii] > 0:
-                                pygame.event.post(event)
+                # See how key presses affect direction for each worm!
+                for ii in range(num_players):
+                    direction = worms[ii].get_direction()
+                    new_direction = direction
+
+                    if event.type == KEYDOWN:
+                        key_press = None
+                        if event.key == ALL_LEFTS[ii]:
+                            key_press = LEFT
+                            if direction != RIGHT:
+                                new_direction = LEFT
+                        elif event.key == ALL_RIGHTS[ii]:
+                            key_press = RIGHT
+                            if direction != LEFT:
+                                new_direction = RIGHT
+                        elif event.key == ALL_UPS[ii]:
+                            key_press = UP
+                            if direction != DOWN:
+                                new_direction = UP
+                        elif event.key == ALL_DOWNS[ii]:
+                            key_press = DOWN
+                            if direction != UP:
+                                new_direction = DOWN
+                        elif event.key == K_ESCAPE:
+                            terminate()
+                        elif event.key == K_F5:
+                            for worm in worms:
+                                worm.terminate()
+
+                        if key_press == worms[ii].last_key_press \
+                                and current_time() - worms[ii].last_press_time < DOUBLE_CLICK_TIME:
+                            # Double click in same direction for turbo
+                            worms[ii].go_turbo()
+
+                        # Only process one direction key per worm per drawing cycle.
+                        # Save others for next time.
+                        if key_press is not None:
+                            if new_direction != direction:
+                                if keys_processed[ii] > 0:
+                                    pygame.event.post(event)
+                                else:
+                                    keys_processed[ii] += 1
+                                    direction = new_direction
+                                    # sound_beep.play()
+                                    worms[ii].last_key_press = key_press
+                                    worms[ii].last_press_time = current_time()
                             else:
-                                keys_processed[ii] += 1
-                                direction = new_direction
-                                # sound_beep.play()
                                 worms[ii].last_key_press = key_press
                                 worms[ii].last_press_time = current_time()
-                        else:
-                            worms[ii].last_key_press = key_press
-                            worms[ii].last_press_time = current_time()
-                         
-                    worms[ii].set_direction(direction)
 
-        # Do for each worm!
-        for ii in range(num_players):
-            if worms[ii].is_in_play:
+                        worms[ii].set_direction(direction)
 
-                num_moves = 1
-                if worms[ii].is_in_turbo():
-                    num_moves = 2
+            # Do for each worm!
+            for ii in range(num_players):
+                if worms[ii].is_in_play:
 
-                direction = worms[ii].get_direction()
-                for kk in range(num_moves):
-                    if worm_died[ii]:  # In case worm died in previous (turbo) move.
-                        continue
+                    num_moves = 1
+                    if worms[ii].is_in_turbo():
+                        num_moves = 2
 
-                    did_die = worms[ii].move()
-                    if did_die:
-                        worm_died[ii] = True
-                        continue
+                    direction = worms[ii].get_direction()
+                    for kk in range(num_moves):
+                        if worm_died[ii]:  # In case worm died in previous (turbo) move.
+                            continue
 
-                    worm_coords = worms[ii].coords
+                        did_die = worms[ii].move()
+                        if did_die:
+                            worm_died[ii] = True
+                            continue
 
-                    # check if the worm has hit the edge
-                    if worm_coords[HEAD]['x'] == -1 or worm_coords[HEAD]['x'] == CELLWIDTH \
-                            or worm_coords[HEAD]['y'] == -1 or worm_coords[HEAD]['y'] == CELLHEIGHT:
-                        worm_died[ii] = True
+                        worm_coords = worms[ii].coords
 
-                    # check if the worm has hit its body
-                    for worm_body in worm_coords[1:]:
-                        if same_coord(worm_coords[HEAD], worm_body):
+                        # check if the worm has hit the edge
+                        if worm_coords[HEAD]['x'] == -1 or worm_coords[HEAD]['x'] == CELLWIDTH \
+                                or worm_coords[HEAD]['y'] == -1 or worm_coords[HEAD]['y'] == CELLHEIGHT:
                             worm_died[ii] = True
 
-                    # check if the worm has hit a portal
-                    hit_portal = False
-                    for portal_coord in portal_coords:
-                        for coord in portal_coord:
-                            if same_coord(worm_coords[HEAD], coord):
-                                sound_portal.play()
-                                hit_portal = True
-                                
-                    # teleport logic:  Should update to use x AND y checks and/or use the portal "name".
-                    if hit_portal:
-                        if worm_coords[HEAD]['x'] == LEFT_PORTAL_X:
-                            if direction == UP or direction == DOWN:
-                                worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
-                            elif direction == LEFT:
-                                worm_coords[HEAD]['x'] = RIGHT_PORTAL_X - 1
-                            else:
-                                worm_coords[HEAD]['x'] = RIGHT_PORTAL_X + 1
-                                
-                        elif worm_coords[HEAD]['x'] == RIGHT_PORTAL_X:
-                            if direction == UP or direction == DOWN:
-                                worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
-                            elif direction == LEFT:
-                                worm_coords[HEAD]['x'] = LEFT_PORTAL_X - 1
-                            else:
-                                worm_coords[HEAD]['x'] = LEFT_PORTAL_X + 1
-                                
-                        elif worm_coords[HEAD]['y'] == UP_PORTAL_Y:
-                            if direction == LEFT or direction == RIGHT:
-                                worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
-                            elif direction == DOWN:
-                                worm_coords[HEAD]['y'] = DOWN_PORTAL_Y + 1
-                            else:
-                                worm_coords[HEAD]['y'] = DOWN_PORTAL_Y - 1
-                                
-                        elif worm_coords[HEAD]['y'] == DOWN_PORTAL_Y:
-                            if direction == LEFT or direction == RIGHT:
-                                worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
-                            elif direction == DOWN:
-                                worm_coords[HEAD]['y'] = UP_PORTAL_Y + 1
-                            else:
-                                worm_coords[HEAD]['y'] = UP_PORTAL_Y - 1
+                        # check if the worm has hit its body
+                        for worm_body in worm_coords[1:]:
+                            if same_coord(worm_coords[HEAD], worm_body):
+                                worm_died[ii] = True
 
-                    # check if the worm has hit another worm
-                    for jj in range(num_players):
-                        # make sure it is not the same worm
-                        if jj == ii:
-                            continue
-                        
-                        # make sure the worm isn't dead
-                        if not worms[jj].is_in_play or worm_died[jj]:
-                            continue
+                        # check if the worm has hit a portal
+                        hit_portal = False
+                        for portal_coord in portal_coords:
+                            for coord in portal_coord:
+                                if same_coord(worm_coords[HEAD], coord):
+                                    sound_portal.play()
+                                    hit_portal = True
 
-                        # Actual checking for collision
-                        kk = 0
-                        for worm_block in worms[jj].coords:
-                            if same_coord(worm_coords[HEAD], worm_block):
-                                worm_died[ii] = True      # This worm dies
-                                worms[ii].draw(DISPLAYSURF)
-                                if kk == 0:               # This is the other head block 
-                                    worm_died[jj] = True  # The other worm dies
-                            kk += 1
+                        # teleport logic:  Should update to use x AND y checks and/or use the portal "name".
+                        if hit_portal:
+                            if worm_coords[HEAD]['x'] == LEFT_PORTAL_X:
+                                if direction == UP or direction == DOWN:
+                                    worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
+                                elif direction == LEFT:
+                                    worm_coords[HEAD]['x'] = RIGHT_PORTAL_X - 1
+                                else:
+                                    worm_coords[HEAD]['x'] = RIGHT_PORTAL_X + 1
 
-                    existing_coords = make_coord_list(portal_coords) + collect_worms_coords(worms)
+                            elif worm_coords[HEAD]['x'] == RIGHT_PORTAL_X:
+                                if direction == UP or direction == DOWN:
+                                    worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
+                                elif direction == LEFT:
+                                    worm_coords[HEAD]['x'] = LEFT_PORTAL_X - 1
+                                else:
+                                    worm_coords[HEAD]['x'] = LEFT_PORTAL_X + 1
 
-                    # check if worm has eaten an apple
-                    if same_coord(worm_coords[HEAD], apple):
-                        apple = get_safe_fruit_location(existing_coords)  # set a new apple somewhere
-                        apple_time = frame_count/FPS
-                        sound_happy.play()
-                        worms[ii].add_score(GROW_BY)
-                        if apple_is_bad:
-                            worms[ii].shrink()
-                        else:
-                            worms[ii].grow(GROW_BY)
-                            worms[ii].add_turbo()
+                            elif worm_coords[HEAD]['y'] == UP_PORTAL_Y:
+                                if direction == LEFT or direction == RIGHT:
+                                    worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
+                                elif direction == DOWN:
+                                    worm_coords[HEAD]['y'] = DOWN_PORTAL_Y + 1
+                                else:
+                                    worm_coords[HEAD]['y'] = DOWN_PORTAL_Y - 1
 
-                    if len(golden_apple) > 0:
-                        # check if a worm has eaten a golden_apple
-                        if same_coord(worm_coords[HEAD], golden_apple):
-                            last_golden_time = current_time()
-                            sound_life.play()
-                            golden_apple = []
-                            worms[ii].add_life()
+                            elif worm_coords[HEAD]['y'] == DOWN_PORTAL_Y:
+                                if direction == LEFT or direction == RIGHT:
+                                    worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
+                                elif direction == DOWN:
+                                    worm_coords[HEAD]['y'] = UP_PORTAL_Y + 1
+                                else:
+                                    worm_coords[HEAD]['y'] = UP_PORTAL_Y - 1
 
-                    if len(blueberry) > 0:
-                        # check if a worm has eaten a blueberry
-                        if same_coord(worm_coords[HEAD], blueberry):
-                            last_blueberry_time = current_time()
+                        # check if the worm has hit another worm
+                        for jj in range(num_players):
+                            # make sure it is not the same worm
+                            if jj == ii:
+                                continue
+
+                            # make sure the worm isn't dead
+                            if not worms[jj].is_in_play or worm_died[jj]:
+                                continue
+
+                            # Actual checking for collision
+                            kk = 0
+                            for worm_block in worms[jj].coords:
+                                if same_coord(worm_coords[HEAD], worm_block):
+                                    worm_died[ii] = True      # This worm dies
+                                    worms[ii].draw(DISPLAYSURF)
+                                    if kk == 0:               # This is the other head block
+                                        worm_died[jj] = True  # The other worm dies
+                                kk += 1
+
+                        existing_coords = make_coord_list(portal_coords) + collect_worms_coords(worms)
+
+                        # check if worm has eaten an apple
+                        if same_coord(worm_coords[HEAD], apple):
+                            apple = get_safe_fruit_location(existing_coords)  # set a new apple somewhere
+                            apple_time = current_time()
                             sound_happy.play()
-                            blueberry = []
-                            for kk in range(num_players):
-                                if kk != ii:
-                                    worms[kk].freeze()
+                            worms[ii].add_score(GROW_BY)
+                            if apple_is_bad:
+                                worms[ii].shrink()
+                            else:
+                                worms[ii].grow(GROW_BY)
+                                worms[ii].add_turbo()
 
-                    if len(grape) > 0:
-                        # check if a worm has eaten a grape
-                        if same_coord(worm_coords[HEAD], grape):
-                            last_grape_time = current_time()
-                            sound_happy.play()
-                            worms[ii].make_invisible()
-                            worms[ii].add_score(GRAPE_POINTS)
-                            grape = []
+                        if len(golden_apple) > 0:
+                            # check if a worm has eaten a golden_apple
+                            if same_coord(worm_coords[HEAD], golden_apple):
+                                last_golden_time = current_time()
+                                sound_life.play()
+                                golden_apple = []
+                                worms[ii].add_life()
 
-                    if len(banana) > 0:
-                        # check if a worm has eaten a banana, and flip the coordinates
-                        if same_coord(worm_coords[HEAD], banana):
-                            last_banana_time = current_time()
-                            sound_reverse.play()
-                            worms[ii].reverse()
-                            worms[ii].add_score(BANANA_POINTS)
-                            banana = []
-                            
-                    # Do lime switch after length is adjusted
-                    if len(lime) > 0 and not worm_died[ii]:
-                        # check if a worm has eaten a lime
-                        if same_coord(worm_coords[HEAD], lime):
-                            last_lime_time = frame_count/FPS
-                            sound_happy.play()
-                            worms[ii].add_score(LIME_POINTS)
-                            lime = []
-                            do_switcheroo = True
-                            for jj in range(num_players):
-                                remove_worm_events(jj)
+                        if len(blueberry) > 0:
+                            # check if a worm has eaten a blueberry
+                            if same_coord(worm_coords[HEAD], blueberry):
+                                last_blueberry_time = current_time()
+                                sound_happy.play()
+                                blueberry = []
+                                for kk in range(num_players):
+                                    if kk != ii:
+                                        worms[kk].freeze()
+
+                        if len(grape) > 0:
+                            # check if a worm has eaten a grape
+                            if same_coord(worm_coords[HEAD], grape):
+                                last_grape_time = current_time()
+                                sound_happy.play()
+                                worms[ii].make_invisible()
+                                worms[ii].add_score(GRAPE_POINTS)
+                                grape = []
+
+                        if len(banana) > 0:
+                            # check if a worm has eaten a banana, and flip the coordinates
+                            if same_coord(worm_coords[HEAD], banana):
+                                last_banana_time = current_time()
+                                sound_reverse.play()
+                                worms[ii].reverse()
+                                worms[ii].add_score(BANANA_POINTS)
+                                banana = []
+
+                        # Do lime switch after length is adjusted
+                        if len(lime) > 0 and not worm_died[ii]:
+                            # check if a worm has eaten a lime
+                            if same_coord(worm_coords[HEAD], lime):
+                                last_lime_time = current_time()
+                                sound_happy.play()
+                                worms[ii].add_score(LIME_POINTS)
+                                lime = []
+                                do_switcheroo = True
+                                for jj in range(num_players):
+                                    remove_worm_events(jj)
 
         # Was a switcheroo triggered?
         if do_switcheroo:
+            pause_end_time = get_pause_end_time(SWITCH_PAUSE_TIME)
+            switcheroo_start_time = current_time()
             switcheroo(worms)
             do_switcheroo = False
+            do_switcheroo_effect = True
 
         # ------------- Time check ----------------
 
@@ -612,6 +627,10 @@ def switcheroo(worms):
         worms[ii].set_direction(all_directions[new_index])
 
 
+def get_pause_end_time(pause_length):
+    return current_time() + pause_length
+
+
 def draw_press_key_msg():
     pressKeySurf = BASICFONT.render('Press # of players (1-4) to play.', True, LIGHTGRAY)
     pressKeyRect = pressKeySurf.get_rect()
@@ -647,7 +666,7 @@ def show_start_screen():
     while True:
         DISPLAYSURF.fill(BGCOLOR)
 
-        color = getPulseColor([BLACK, PURPLE], pulse_time=2.0)
+        color = get_pulse_color([BLACK, PURPLE], pulse_time=2.0)
         titleSurf2 = titleFont.render('Wormy Wars!', True, color)
 
         rotatedSurf2 = pygame.transform.rotate(titleSurf2, degrees2)
@@ -656,7 +675,7 @@ def show_start_screen():
         DISPLAYSURF.blit(rotatedSurf2, rotatedRect2)
 
         # Get color for non-rotating title
-        color = getPulseColor(TITLE_COLORS, pulse_time=8.0)
+        color = get_pulse_color(TITLE_COLORS, pulse_time=8.0)
         titleSurf1 = titleFont.render('Wormy Wars!', True, color)
 
         rotatedSurf1 = pygame.transform.rotate(titleSurf1, degrees1)
@@ -722,80 +741,31 @@ def draw_score(player_number, score, color):
     DISPLAYSURF.blit(scoreSurf, scoreRect)
 
 
-def draw_turbos(player_number, turbos, color):
-    scoreSurf = BASICFONT.render('Turbos: %s' % (turbos), True, color)
-    scoreRect = scoreSurf.get_rect()
-    scoreRect.topleft = (INFO_POSITION[player_number]['x'], INFO_POSITION[player_number]['y'] + 20)
-    DISPLAYSURF.blit(scoreSurf, scoreRect)    
+def draw_turbos(player_number, turbos, worm_color):
+    score_surf = BASICFONT.render('Turbos: %s' % turbos, True, worm_color)
+    score_rect = score_surf.get_rect()
+    score_rect.topleft = (INFO_POSITION[player_number]['x'], INFO_POSITION[player_number]['y'] + 20)
+    DISPLAYSURF.blit(score_surf, score_rect)
 
 
-def draw_lives(player_number, lives, color):
-    scoreSurf = BASICFONT.render('Lives: %s' % (lives), True, color)
-    scoreRect = scoreSurf.get_rect()
-    scoreRect.topleft = (INFO_POSITION[player_number]['x'], INFO_POSITION[player_number]['y'] + 40)
-    DISPLAYSURF.blit(scoreSurf, scoreRect)
+def draw_lives(player_number, lives, worm_color):
+    score_surf = BASICFONT.render('Lives: %s' % lives, True, worm_color)
+    score_rect = score_surf.get_rect()
+    score_rect.topleft = (INFO_POSITION[player_number]['x'], INFO_POSITION[player_number]['y'] + 40)
+    DISPLAYSURF.blit(score_surf, score_rect)
 
 
-def drawWorm(wormCoords, wormColor, is_robot=False, is_shrinking=False, is_turbo=False, is_visible=True):
-    inner_size = CELLSIZE - 8
-    inner_offset = 4
-    outer_size = CELLSIZE
-
-    cc = 0
-    for coord in wormCoords:
-        x = coord['x'] * CELLSIZE
-        y = coord['y'] * CELLSIZE
-
-        # Do outer blocks
-        if cc % 2 == 0:
-            color = wormColor
-        else:
-            if is_robot:
-                color = PURPLE
-            else:
-                color = DARKGREEN
-
-        if is_turbo:
-            color = getPulseColor([color, WHITE], 1.0)
-
-        if not is_visible:
-            color = BLACK
-            
-        wormSegmentRect = pygame.Rect(x, y, outer_size, outer_size)
-        pygame.draw.rect(DISPLAYSURF, color, wormSegmentRect)
-
-        # Do inner blocks
-        if cc > 0:
-            if cc%2 == 0:
-                if is_robot:
-                    color = PURPLE
-                else:
-                    color = DARKGREEN   
-            else:
-                color = wormColor           
-
-            if is_shrinking:
-                color = getPulseColor([color, BLACK], 2.0)
-
-            if not is_visible:
-                color = BLACK
-
-            wormInnerSegmentRect = pygame.Rect(x + inner_offset, y + inner_offset, inner_size, inner_size)
-            pygame.draw.rect(DISPLAYSURF, color, wormInnerSegmentRect)
-            
-        cc += 1
-
-def draw_portals(portalCoords):
-    use_color = getPulseColor([PURPLE, GREEN], 2.0)
-    for portal in portalCoords:
-        drawPortal(portal, use_color)
+def draw_portals(portal_coords):
+    use_color = get_pulse_color([PURPLE, GREEN], 2.0)
+    for portal in portal_coords:
+        draw_portal(portal, use_color)
 
 
-def getPulseColor(colors, pulse_time=2.0):
+def get_pulse_color(colors, pulse_time=2.0, pulse_start_time=0.0):
     num_colors = len(colors)
     one_color_time = pulse_time/num_colors
 
-    mod_time = (current_time() % pulse_time)
+    mod_time = ((current_time() - pulse_start_time) % pulse_time)
     norm_time = mod_time/one_color_time
     ix1 = int(norm_time)
     ix2 = (ix1+1) % num_colors
@@ -809,21 +779,21 @@ def getPulseColor(colors, pulse_time=2.0):
     return use_color
 
 
-def drawPortal(portalCoords, color):
-    for coord in portalCoords:
+def draw_portal(portal_coords, portal_color):
+    for coord in portal_coords:
         x = coord['x'] * CELLSIZE
         y = coord['y'] * CELLSIZE
         portalSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
-        pygame.draw.rect(DISPLAYSURF, color, portalSegmentRect)
+        pygame.draw.rect(DISPLAYSURF, portal_color, portalSegmentRect)
 
 
-def draw_fruit(coord, color=RED, is_shiny=False, is_bad=False):
+def draw_fruit(coord, fruit_color=RED, is_shiny=False, is_bad=False):
     if len(coord) == 0:
         return
     x = coord['x'] * CELLSIZE
     y = coord['y'] * CELLSIZE
     fruitRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
-    pygame.draw.rect(DISPLAYSURF, color, fruitRect)
+    pygame.draw.rect(DISPLAYSURF, fruit_color, fruitRect)
 
     if is_bad:
         fruitRect = pygame.Rect(x+3, y+3, CELLSIZE-14, CELLSIZE-14)
@@ -833,11 +803,11 @@ def draw_fruit(coord, color=RED, is_shiny=False, is_bad=False):
         pygame.draw.rect(DISPLAYSURF, WHITE, fruitRect)
 
 
-def drawGrid():
-    for x in range(0, WINDOWWIDTH, CELLSIZE): # draw vertical lines
-        pygame.draw.line(DISPLAYSURF, DARKGRAY, (x, 0), (x, WINDOWHEIGHT))
-    for y in range(0, WINDOWHEIGHT, CELLSIZE): # draw horizontal lines
-        pygame.draw.line(DISPLAYSURF, DARKGRAY, (0, y), (WINDOWWIDTH, y))
+def draw_grid(grid_color=DARKGRAY):
+    for x in range(0, WINDOWWIDTH, CELLSIZE):   # draw vertical lines
+        pygame.draw.line(DISPLAYSURF, grid_color, (x, 0), (x, WINDOWHEIGHT))
+    for y in range(0, WINDOWHEIGHT, CELLSIZE):  # draw horizontal lines
+        pygame.draw.line(DISPLAYSURF, grid_color, (0, y), (WINDOWWIDTH, y))
 
 
 if __name__ == '__main__':

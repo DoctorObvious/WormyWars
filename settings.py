@@ -28,6 +28,7 @@ NUM_SECS_IN_FREEZE = 3.
 LIME_APPEAR_TIME = 42.          # in seconds
 LIME_DISAPPEAR_TIME = 10.       # in seconds
 LIME_POINTS = 10
+SWITCH_PAUSE_TIME = 1.5         # in seconds
 
 BAD_APPLE_TIME = 16.            # how long before apple goes rotten. For 1 player
 SHRINK_SEG_TIME = 1.            # number of seconds for a segment to disappear
