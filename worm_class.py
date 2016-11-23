@@ -79,12 +79,12 @@ class Worm:
     invisible_end_time = []
     is_shrinking = []
 
+    started_dying_time = []
     last_shrink_time = []
     last_press_time = []
     last_key_press = []
 
-    # is_dying = []   TODO: Do we need this?
-
+    is_dying = []
     is_robot = False
     starting_turbos = NUM_TURBOS
 
@@ -92,7 +92,7 @@ class Worm:
         self.is_in_play = True
         self.color = worm_color
         self.player_number = player_number
-        self.num_lives = NUM_LIVES
+        self.num_lives = NUM_LIVES + 1
         self.score = 0
         self.last_shrink_time = -100
         self.last_press_time = -100
@@ -110,8 +110,18 @@ class Worm:
 
     def birth(self, starting_coords):
         if self.is_in_play:
+            self.started_dying_time = None
+
+            if self.num_lives > 0:
+                self.num_lives -= 1
+                if self.num_lives <= 0:
+                    self.is_in_play = False
+                    self.coords = []
+                    return
+
             self.coords = starting_coords
             self.is_in_play = True
+            self.is_dying = False
             self.num_to_grow = 0
             self.num_turbos = self.starting_turbos
             self.turbo_end_time = 0
@@ -127,15 +137,18 @@ class Worm:
         self.turbo_end_time = 0
         self.freeze_end_time = 0
         self.invisible_end_time = 0
-
-        if self.num_lives > 0:
-            self.num_lives -= 1
-            if self.num_lives <= 0:
-                self.is_in_play = False
+        self.is_dying = True
+        self.started_dying_time = current_time()
 
     def terminate(self):
         self.num_lives = 0
         self.is_in_play = False
+
+    def is_dead(self):
+        if self.started_dying_time is None:
+            return False
+        else:
+            return elapsed_time(self.started_dying_time) > DYING_TIME_IN_SECS
 
     def is_visible(self):
         return current_time() > self.invisible_end_time
@@ -196,9 +209,11 @@ class Worm:
                 if self.is_in_turbo():
                     block_color = utils.get_shifting_color([block_color, WHITE], 1.0)
 
-                if not self.is_visible():
+                if self.is_dying:
+                    block_color = utils.get_pulse_color([block_color, BLACK], pulse_time=DYING_TIME_IN_SECS*2.0,
+                                                        pulse_start_time=self.started_dying_time)
+                elif not self.is_visible():
                     block_color = BLACK
-
                 worm_outer_rect = pygame.Rect(x, y, outer_size, outer_size)
                 pygame.draw.rect(display_surface, block_color, worm_outer_rect)
 
@@ -215,6 +230,9 @@ class Worm:
                     if self.is_shrinking:
                         block_color = utils.get_shifting_color([block_color, BLACK], 2.0)
 
+                    if self.is_dying:
+                        block_color = utils.get_pulse_color([block_color, BLACK], pulse_time=DYING_TIME_IN_SECS*1.0,
+                                                            pulse_start_time=self.started_dying_time)
                     if not self.is_visible():
                         block_color = BLACK
 
@@ -234,10 +252,7 @@ class Worm:
             raise TypeError("Only a WormBot can choose its direction")
 
     def move(self):
-
-        did_die = False
-
-        if self.is_frozen():
+        if self.is_frozen() or self.is_dying or self.is_dead():
             return
 
         # move the worm by adding a segment in the direction it is moving
@@ -255,11 +270,8 @@ class Worm:
             self.last_shrink_time = current_time()
             if len(self.coords) == 1:
                 self.die()
-                did_die = True
             else:
                 del self.coords[-1]     # remove worm's tail segment
-
-        return did_die
 
     def grow(self, num_to_grow):
         self.is_shrinking = False

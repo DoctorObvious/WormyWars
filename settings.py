@@ -5,7 +5,7 @@ NUM_LIVES = 3
 FPS = 8
 GROW_BY = 4
 DOUBLE_CLICK_TIME = 0.3         # in seconds
-DEATH_TIME = 1.0                # in seconds
+DYING_TIME_IN_SECS = 1.0                # in seconds
 
 GRAPE_APPEAR_TIME = 20.         # in seconds
 GRAPE_POINTS = 17
@@ -25,7 +25,7 @@ BLUEBERRY_DISAPPEAR_TIME = 5    # in seconds
 BLUEBERRY_POINTS = 2
 NUM_SECS_IN_FREEZE = 3.
 
-LIME_APPEAR_TIME = 42.          # in seconds
+LIME_APPEAR_TIME = 35.          # in seconds
 LIME_DISAPPEAR_TIME = 10.       # in seconds
 LIME_POINTS = 10
 SWITCH_PAUSE_TIME = 1.5         # in seconds

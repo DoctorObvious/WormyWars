@@ -195,7 +195,6 @@ def run_game(num_players, num_robots=0):
         draw_grid()
 
         keys_processed = [0] * num_players
-        worm_died = [False] * num_players
 
         if current_time() > pause_end_time:
             do_switcheroo_effect = False
@@ -274,25 +273,22 @@ def run_game(num_players, num_robots=0):
 
                     direction = worms[ii].get_direction()
                     for kk in range(num_moves):
-                        if worm_died[ii]:  # In case worm died in previous (turbo) move.
+                        if worms[ii].is_dying or worms[ii].is_dead():  # In case worm died in previous (turbo) move.
                             continue
 
-                        did_die = worms[ii].move()
-                        if did_die:
-                            worm_died[ii] = True
-                            continue
+                        worms[ii].move()
 
                         worm_coords = worms[ii].coords
 
                         # check if the worm has hit the edge
                         if worm_coords[HEAD]['x'] == -1 or worm_coords[HEAD]['x'] == CELLWIDTH \
                                 or worm_coords[HEAD]['y'] == -1 or worm_coords[HEAD]['y'] == CELLHEIGHT:
-                            worm_died[ii] = True
+                            worms[ii].die()
 
                         # check if the worm has hit its body
                         for worm_body in worm_coords[1:]:
                             if same_coord(worm_coords[HEAD], worm_body):
-                                worm_died[ii] = True
+                                worms[ii].die()
 
                         # check if the worm has hit a portal
                         hit_portal = False
@@ -343,17 +339,17 @@ def run_game(num_players, num_robots=0):
                                 continue
 
                             # make sure the worm isn't dead
-                            if not worms[jj].is_in_play or worm_died[jj]:
+                            if not worms[jj].is_in_play or worms[jj].is_dead():
                                 continue
 
                             # Actual checking for collision
                             kk = 0
                             for worm_block in worms[jj].coords:
                                 if same_coord(worm_coords[HEAD], worm_block):
-                                    worm_died[ii] = True      # This worm dies
+                                    worms[ii].die()             # This worm dies
                                     worms[ii].draw(DISPLAYSURF)
-                                    if kk == 0:               # This is the other head block
-                                        worm_died[jj] = True  # The other worm dies
+                                    if kk == 0:                 # This is the other head block
+                                        worms[jj].die()         # The other worm dies
                                 kk += 1
 
                         existing_coords = make_coord_list(portal_coords) + collect_worms_coords(worms)
@@ -407,7 +403,7 @@ def run_game(num_players, num_robots=0):
                                 banana = []
 
                         # Do lime switch after length is adjusted
-                        if len(lime) > 0 and not worm_died[ii]:
+                        if len(lime) > 0 and not worms[ii].is_dying:
                             # check if a worm has eaten a lime
                             if same_coord(worm_coords[HEAD], lime):
                                 last_lime_time = current_time()
@@ -495,15 +491,15 @@ def run_game(num_players, num_robots=0):
         draw_fruit(lime, LIMEGREEN)
 
         for ii in range(num_players):
-            if worm_died[ii]:
-                worms[ii].die()
+            if worms[ii].is_dead():
                 remove_worm_events(ii)
 
                 if worms[ii].is_in_play:
                     starting_coords = get_safe_starting_coords(ii, existing_coords)
                     worms[ii].birth(starting_coords)
+                    if worms[ii].num_lives == 0:
+                        sound_die.play()
                 else:
-                    sound_die.play()
                     worms[ii].draw(DISPLAYSURF)
 
         # Update coordinates where things are
@@ -759,24 +755,6 @@ def draw_portals(portal_coords):
     use_color = get_pulse_color([PURPLE, GREEN], 2.0)
     for portal in portal_coords:
         draw_portal(portal, use_color)
-
-
-def get_pulse_color(colors, pulse_time=2.0, pulse_start_time=0.0):
-    num_colors = len(colors)
-    one_color_time = pulse_time/num_colors
-
-    mod_time = ((current_time() - pulse_start_time) % pulse_time)
-    norm_time = mod_time/one_color_time
-    ix1 = int(norm_time)
-    ix2 = (ix1+1) % num_colors
-    fraction = norm_time - ix1
-
-    use_color = list(colors[0])
-    for ii in range(3):
-        use_color[ii] = int((1.0-fraction) * float(colors[ix1][ii]) + fraction * float(colors[ix2][ii]))
-
-    use_color = tuple(use_color)
-    return use_color
 
 
 def draw_portal(portal_coords, portal_color):
