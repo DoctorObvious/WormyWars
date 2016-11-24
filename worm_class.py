@@ -197,7 +197,11 @@ class Worm:
                 x = coord['x'] * CELLSIZE
                 y = coord['y'] * CELLSIZE
 
-                # Do outer blocks
+                if self.is_frozen():
+                    worm_frozen_rect = pygame.Rect(x, y, outer_size, outer_size)
+                    pygame.draw.rect(display_surface, LIGHTBLUE, worm_frozen_rect)
+
+                # Do outer worm blocks
                 if cc % 2 == 0:
                     block_color = self.color
                 else:
@@ -209,12 +213,21 @@ class Worm:
                 if self.is_in_turbo():
                     block_color = utils.get_shifting_color([block_color, WHITE], 1.0)
 
+                if self.is_frozen():
+                    block_color = utils.get_shifting_color([block_color, LIGHTBLUE], 1.0)
+                    use_outer_size = outer_size - 4
+                    use_outer_offset = 2
+                else:
+                    use_outer_size = outer_size
+                    use_outer_offset = 0
+
                 if self.is_dying:
                     block_color = utils.get_pulse_color([block_color, BLACK], pulse_time=DYING_TIME_IN_SECS*2.0,
                                                         pulse_start_time=self.started_dying_time)
                 elif not self.is_visible():
                     block_color = BLACK
-                worm_outer_rect = pygame.Rect(x, y, outer_size, outer_size)
+                worm_outer_rect = pygame.Rect(x + use_outer_offset, y + use_outer_offset,
+                                              use_outer_size, use_outer_size)
                 pygame.draw.rect(display_surface, block_color, worm_outer_rect)
 
                 # Do inner blocks
@@ -229,6 +242,9 @@ class Worm:
 
                     if self.is_shrinking:
                         block_color = utils.get_shifting_color([block_color, BLACK], 2.0)
+
+                    if self.is_frozen():
+                        block_color = utils.get_shifting_color([block_color, LIGHTBLUE], 1.0)
 
                     if self.is_dying:
                         block_color = utils.get_pulse_color([block_color, BLACK], pulse_time=DYING_TIME_IN_SECS*1.0,

@@ -17,10 +17,10 @@ BANANA_POINTS = 10
 NUM_SECS_IN_TURBO = 1.75        # how long does it last
 NUM_TURBOS = 1
 
-GOLDEN_APPEAR_TIME = 30.        # in seconds
+GOLDEN_APPEAR_TIME = 60.        # in seconds
 GOLDEN_DISAPPEAR_TIME = 5.      # in seconds
 
-BLUEBERRY_APPEAR_TIME = 25.     # in seconds
+BLUEBERRY_APPEAR_TIME = 18.     # in seconds
 BLUEBERRY_DISAPPEAR_TIME = 5    # in seconds
 BLUEBERRY_POINTS = 2
 NUM_SECS_IN_FREEZE = 3.
@@ -68,6 +68,7 @@ RED       = (255,   0,   0)
 GREEN     = (  0, 255,   0)
 BLUE      = (  0,   0, 255)
 BLUE2     = ( 10,   0, 215)
+LIGHTBLUE = (180, 180, 255)
 DARKGREEN = (  0, 155,   0)
 LIMEGREEN = ( 50, 205,  50)
 DARKGRAY  = ( 40,  40,  40)

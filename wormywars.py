@@ -22,7 +22,7 @@ def main():
     pygame.mixer.init(frequency=44100, channels=2)
     s = pygame.mixer.Sound(SOUND_HAPPY)
     s.play()
-    
+
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
@@ -73,8 +73,8 @@ def get_safe_starting_coords(player_number, existing_coords=None):
     start_x = 5
     worm_coords = []
     for y_try in range(4, 26):
-        start_y = y_try + 7*player_number
-        start_y = ((start_y-4) % 22) + 4
+        start_y = y_try + 7 * player_number
+        start_y = ((start_y - 4) % 22) + 4
         worm_coords = worm_starting_coords(start_x, start_y)
         if are_coords_safe(worm_coords, existing_coords):
             break
@@ -87,43 +87,43 @@ def worm_starting_coords(start_x, start_y):
             {'x': start_x - 1, 'y': start_y},
             {'x': start_x - 2, 'y': start_y}]
 
-    
+
 def get_portal_coords():
     # Do sides
-    leftPortalCoords = [0] * PORTALS_PER_SIDE
-    leftPortalNames = ['left'] * PORTALS_PER_SIDE
-    rightPortalCoords =  [0] * PORTALS_PER_SIDE
-    rightPortalNames = ['right'] * PORTALS_PER_SIDE
-    
-    portalIncr = int(CELLHEIGHT/(PORTALS_PER_SIDE+1))
-    portalOffset = (PORTAL_LENGTH-1)/2
+    left_portal_coords = [0] * PORTALS_PER_SIDE
+    left_portal_names = ['left'] * PORTALS_PER_SIDE
+    right_portal_coords = [0] * PORTALS_PER_SIDE
+    right_portal_names = ['right'] * PORTALS_PER_SIDE
+
+    portal_incr = int(CELLHEIGHT / (PORTALS_PER_SIDE + 1))
+    portal_offset = (PORTAL_LENGTH - 1) / 2
     for hh in range(PORTALS_PER_SIDE):
-        leftPortalCoords[hh] = [0] * PORTAL_LENGTH
-        rightPortalCoords[hh] = [0] * PORTAL_LENGTH
+        left_portal_coords[hh] = [0] * PORTAL_LENGTH
+        right_portal_coords[hh] = [0] * PORTAL_LENGTH
 
         for xx in range(PORTAL_LENGTH):
-            leftPortalCoords[hh][xx] = {'x': LEFT_PORTAL_X, 'y': (hh+1)*portalIncr-portalOffset+xx}
-            rightPortalCoords[hh][xx] = {'x': RIGHT_PORTAL_X, 'y': (hh+1)*portalIncr-portalOffset+xx}
-    
-    upPortalCoords = [0] * PORTALS_PER_SIDE
-    upPortalNames = ['up'] * PORTALS_PER_SIDE
-    downPortalCoords =  [0] * PORTALS_PER_SIDE
-    downPortalNames = ['down'] * PORTALS_PER_SIDE
-    
-    portalIncr = int(CELLWIDTH/(PORTALS_PER_SIDE+1))
-    portalOffset = (PORTAL_LENGTH-1)/2
+            left_portal_coords[hh][xx] = {'x': LEFT_PORTAL_X, 'y': (hh + 1) * portal_incr - portal_offset + xx}
+            right_portal_coords[hh][xx] = {'x': RIGHT_PORTAL_X, 'y': (hh + 1) * portal_incr - portal_offset + xx}
+
+    up_portal_coords = [0] * PORTALS_PER_SIDE
+    up_portal_names = ['up'] * PORTALS_PER_SIDE
+    down_portal_coords = [0] * PORTALS_PER_SIDE
+    down_portal_names = ['down'] * PORTALS_PER_SIDE
+
+    portal_incr = int(CELLWIDTH / (PORTALS_PER_SIDE + 1))
+    portal_offset = (PORTAL_LENGTH - 1) / 2
     for hh in range(PORTALS_PER_SIDE):
-        upPortalCoords[hh] = [0] * PORTAL_LENGTH
-        downPortalCoords[hh] = [0] * PORTAL_LENGTH
+        up_portal_coords[hh] = [0] * PORTAL_LENGTH
+        down_portal_coords[hh] = [0] * PORTAL_LENGTH
 
         for xx in range(PORTAL_LENGTH):
-            upPortalCoords[hh][xx] = {'y': UP_PORTAL_Y, 'x': (hh+1)*portalIncr-portalOffset+xx}
-            downPortalCoords[hh][xx] = {'y': DOWN_PORTAL_Y, 'x': (hh+1)*portalIncr-portalOffset+xx}
+            up_portal_coords[hh][xx] = {'y': UP_PORTAL_Y, 'x': (hh + 1) * portal_incr - portal_offset + xx}
+            down_portal_coords[hh][xx] = {'y': DOWN_PORTAL_Y, 'x': (hh + 1) * portal_incr - portal_offset + xx}
 
-    portalCoords = leftPortalCoords + rightPortalCoords + upPortalCoords + downPortalCoords
-    portalNames = leftPortalNames + rightPortalNames + upPortalNames + downPortalNames
-    return portalCoords, portalNames
-    
+    portal_coords = left_portal_coords + right_portal_coords + up_portal_coords + down_portal_coords
+    portal_names = left_portal_names + right_portal_names + up_portal_names + down_portal_names
+    return portal_coords, portal_names
+
 
 def run_game(num_players, num_robots=0):
     start_the_clock()
@@ -152,12 +152,12 @@ def run_game(num_players, num_robots=0):
     do_switcheroo = False
     do_switcheroo_effect = False
     switcheroo_start_time = 0.0
-        
+
     # Get the portal coordinates
     portal_coords, portal_names = get_portal_coords()
 
     existing_coords = make_coord_list(portal_coords) + collect_worms_coords(worms)
-    
+
     # Start the apple in a random place.    
     apple = get_safe_fruit_location(existing_coords)
     apple_is_bad = False
@@ -176,7 +176,7 @@ def run_game(num_players, num_robots=0):
     last_golden_time = 0
     last_blueberry_time = 0
     last_lime_time = 0
-    
+
     # Initialize time since a fruit has appeared
     apple_time = 0
     golden_time = -1000
@@ -200,7 +200,7 @@ def run_game(num_players, num_robots=0):
             do_switcheroo_effect = False
 
             # Handle robots based on current state of worms and board
-            visible_worms_info = gather_visible_worms_info(worms)   # Gather before any of this frame's choices are made
+            visible_worms_info = gather_visible_worms_info(worms)  # Gather before any of this frame's choices are made
             fruits = [banana, grape, lime, blueberry, golden_apple]
             for ii in range(num_players):
                 if worms[ii].is_robot and worms[ii].is_in_play:
@@ -346,10 +346,10 @@ def run_game(num_players, num_robots=0):
                             kk = 0
                             for worm_block in worms[jj].coords:
                                 if same_coord(worm_coords[HEAD], worm_block):
-                                    worms[ii].die()             # This worm dies
+                                    worms[ii].die()  # This worm dies
                                     worms[ii].draw(DISPLAYSURF)
-                                    if kk == 0:                 # This is the other head block
-                                        worms[jj].die()         # The other worm dies
+                                    if kk == 0:  # This is the other head block
+                                        worms[jj].die()  # The other worm dies
                                 kk += 1
 
                         existing_coords = make_coord_list(portal_coords) + collect_worms_coords(worms)
@@ -380,9 +380,10 @@ def run_game(num_players, num_robots=0):
                                 last_blueberry_time = current_time()
                                 sound_happy.play()
                                 blueberry = []
-                                for kk in range(num_players):
-                                    if kk != ii:
-                                        worms[kk].freeze()
+                                for mm in range(num_players):
+                                    if mm != ii:
+                                        worms[mm].freeze()
+                                        remove_worm_events(mm)
 
                         if len(grape) > 0:
                             # check if a worm has eaten a grape
@@ -426,11 +427,11 @@ def run_game(num_players, num_robots=0):
 
         # Has the apple gone bad?
         is_alive = [worm.is_in_play for worm in worms]
-        bad_apple_time = max(7, BAD_APPLE_TIME - sum(is_alive)*2)
+        bad_apple_time = max(7, BAD_APPLE_TIME - sum(is_alive) * 2)
         if elapsed_time(apple_time) > bad_apple_time:
             apple_is_bad = True
         else:
-            apple_is_bad = False    
+            apple_is_bad = False
 
         # Is it time to make a golden_apple?
         if len(golden_apple) == 0 and (elapsed_time(last_golden_time) > GOLDEN_APPEAR_TIME):
@@ -461,7 +462,7 @@ def run_game(num_players, num_robots=0):
         elif (len(lime) > 0 and (elapsed_time(lime_time) > LIME_DISAPPEAR_TIME)) or sum(is_alive) < 2:
             # It is time for the lime to disappear
             lime = []
-            
+
         # Is it time to make a grape?
         if len(grape) == 0 and (elapsed_time(last_grape_time) > GRAPE_APPEAR_TIME):
             # Make a grape!
@@ -516,8 +517,8 @@ def run_game(num_players, num_robots=0):
             winning_player = []
             for ii in range(num_players):
                 if scores[ii] == max_score:
-                    winning_player.append(ii+1)
-            
+                    winning_player.append(ii + 1)
+
             return winning_player  # game over
 
 
@@ -525,44 +526,45 @@ def move_worm_same_side_portal(worm_head, portal_coords):
     # Find which portal we're in
     for portal in portal_coords:
         if worm_head in portal:
-            foundPortal = portal
+            found_portal = portal
 
     # Is it a vertical or horizontal portal?
-    if foundPortal[0]['x'] == foundPortal[1]['x']:
+    if found_portal[0]['x'] == found_portal[1]['x']:
         use_key = 'x'
         other_key = 'y'
     else:
         use_key = 'y'
         other_key = 'x'
-        
+
     # Are we going in the min or max end?
-    min_of_found = find_mind_coord(foundPortal, other_key)
+    min_of_found = find_min_coord(found_portal, other_key)
     if worm_head[other_key] == min_of_found:
         entered_min = True
     else:
         entered_min = False
 
     # Find the other one on the same side
+    other_portal = []
     for portal in portal_coords:
-        if portal[0][use_key] == foundPortal[0][use_key] and portal[0][other_key] != foundPortal[0][other_key]:
+        if portal[0][use_key] == found_portal[0][use_key] and portal[0][other_key] != found_portal[0][other_key]:
             other_portal = portal
-    
+
     # Figure out the correct end of the portal to exit
     if entered_min:
         use_val = find_max_coord(other_portal, other_key)
-        use_val += 1   # Go beyond end of portal
+        use_val += 1  # Go beyond end of portal
     else:
-        use_val = find_mind_coord(other_portal, other_key)
-        use_val -= 1   # Go beyond end of portal
+        use_val = find_min_coord(other_portal, other_key)
+        use_val -= 1  # Go beyond end of portal
 
-    newHead = dict()
-    newHead[use_key] = foundPortal[0][use_key]
-    newHead[other_key] = use_val
+    new_head = dict()
+    new_head[use_key] = found_portal[0][use_key]
+    new_head[other_key] = use_val
 
-    return newHead
+    return new_head
 
 
-def find_mind_coord(coords, key):
+def find_min_coord(coords, key):
     use_val = max(WINDOWWIDTH, WINDOWHEIGHT)
     for coord in coords:
         if coord[key] < use_val:
@@ -581,15 +583,15 @@ def find_max_coord(coords, key):
 
 
 def get_safe_fruit_location(existing_coords):
-    fruit = get_random_location()       # set a new apple somewhere
+    fruit = get_random_location()  # set a new apple somewhere
     while not are_coords_safe([fruit], existing_coords):
-        fruit = get_random_location()   # set a new apple somewhere
-        
+        fruit = get_random_location()  # set a new apple somewhere
+
     return fruit
 
 
 def remove_worm_events(worm_number):
-    for event in pygame.event.get(): # event handling loop
+    for event in pygame.event.get():  # event handling loop
         if event.type == KEYDOWN:
             if event.key == ALL_LEFTS[worm_number]:
                 continue
@@ -599,7 +601,7 @@ def remove_worm_events(worm_number):
                 continue
             elif event.key == ALL_DOWNS[worm_number]:
                 continue
-        
+
         pygame.event.post(event)
 
 
@@ -615,10 +617,10 @@ def switcheroo(worms):
 
     for ii in range(num_players):
         for jj in range(1, num_players):
-            new_index = (ii+jj) % num_players
+            new_index = (ii + jj) % num_players
             if worms[new_index].is_in_play:
                 break
-        
+
         worms[ii].coords = all_worm_coords[new_index]
         worms[ii].set_direction(all_directions[new_index])
 
@@ -628,66 +630,65 @@ def get_pause_end_time(pause_length):
 
 
 def draw_press_key_msg():
-    pressKeySurf = BASICFONT.render('Press # of players (1-4) to play.', True, LIGHTGRAY)
-    pressKeyRect = pressKeySurf.get_rect()
-    pressKeyRect.topleft = (WINDOWWIDTH - 300, WINDOWHEIGHT - 30)
-    DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
+    press_key_surf = BASICFONT.render('Press # of players (1-4) to play.', True, LIGHTGRAY)
+    press_key_rect = press_key_surf.get_rect()
+    press_key_rect.topleft = (WINDOWWIDTH - 300, WINDOWHEIGHT - 30)
+    DISPLAYSURF.blit(press_key_surf, press_key_rect)
 
 
 def check_for_key_press():
     for event in pygame.event.get():
-        if event.type == QUIT:      #event is quit 
+        if event.type == QUIT:  # event is quit
             terminate()
         elif event.type == KEYDOWN:
-            if event.key == K_ESCAPE:   #event is escape key
+            if event.key == K_ESCAPE:  # event is escape key
                 terminate()
             else:
-                return event.key   #key found return with it
+                return event.key  # key found return with it
     # no quit or key events in queue so return None    
     return None
 
-    
+
 def show_start_screen():
-    titleFont = pygame.font.Font('freesansbold.ttf', 100)
-    # titleSurf1 = titleFont.render('Wormy Wars!', True, WHITE, DARKGREEN)
-    titleSurf1 = titleFont.render('Wormy Wars!', True, WHITE)
-    titleSurf2 = titleFont.render('Wormy Wars!', True, PURPLE)
+    title_font = pygame.font.Font('freesansbold.ttf', 100)
+    # title_surf_1 = title_font.render('Wormy Wars!', True, WHITE, DARKGREEN)
+    # title_surf_1 = title_font.render('Wormy Wars!', True, WHITE)
+    # title_surf_2 = title_font.render('Wormy Wars!', True, PURPLE)
 
     degrees1 = 0
     degrees2 = 0
-    
-    #KRT 14/06/2012 rewrite event detection to deal with mouse use
-    pygame.event.get()  #clear out event queue
+
+    # KRT 14/06/2012 rewrite event detection to deal with mouse use
+    pygame.event.get()  # clear out event queue
 
     while True:
         DISPLAYSURF.fill(BGCOLOR)
 
-        color = get_pulse_color([BLACK, PURPLE], pulse_time=2.0)
-        titleSurf2 = titleFont.render('Wormy Wars!', True, color)
+        use_color = get_pulse_color([BLACK, PURPLE], pulse_time=2.0)
+        title_surf_2 = title_font.render('Wormy Wars!', True, use_color)
 
-        rotatedSurf2 = pygame.transform.rotate(titleSurf2, degrees2)
-        rotatedRect2 = rotatedSurf2.get_rect()
-        rotatedRect2.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
-        DISPLAYSURF.blit(rotatedSurf2, rotatedRect2)
+        rotated_surf_2 = pygame.transform.rotate(title_surf_2, degrees2)
+        rotated_rect_2 = rotated_surf_2.get_rect()
+        rotated_rect_2.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
+        DISPLAYSURF.blit(rotated_surf_2, rotated_rect_2)
 
-        # Get color for non-rotating title
-        color = get_pulse_color(TITLE_COLORS, pulse_time=8.0)
-        titleSurf1 = titleFont.render('Wormy Wars!', True, color)
+        # Get use_color for non-rotating title
+        use_color = get_pulse_color(TITLE_COLORS, pulse_time=8.0)
+        title_surf_1 = title_font.render('Wormy Wars!', True, use_color)
 
-        rotatedSurf1 = pygame.transform.rotate(titleSurf1, degrees1)
-        rotatedRect1 = rotatedSurf1.get_rect()
-        rotatedRect1.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
-        DISPLAYSURF.blit(rotatedSurf1, rotatedRect1)
+        rotated_surf_1 = pygame.transform.rotate(title_surf_1, degrees1)
+        rotated_rect_1 = rotated_surf_1.get_rect()
+        rotated_rect_1.center = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
+        DISPLAYSURF.blit(rotated_surf_1, rotated_rect_1)
 
         draw_press_key_msg()
-        #KRT 14/06/2012 rewrite event detection to deal with mouse use
         key = check_for_key_press()
         if key:
             return key
         pygame.display.update()
         FPSCLOCK.tick(FPS)
-        degrees1 += 0 # rotate by 3 degrees each frame
-        degrees2 += 7 # rotate by 7 degrees each frame
+        degrees1 += 0  # rotate by 3 degrees each frame
+        degrees2 += 7  # rotate by 7 degrees each frame
 
 
 def terminate():
@@ -699,42 +700,43 @@ def get_random_location():
     return {'x': random.randint(0, CELLWIDTH - 1), 'y': random.randint(0, CELLHEIGHT - 1)}
 
 
-def show_game_over_screen(winning_player, color):
-    gameOverFont = pygame.font.Font('freesansbold.ttf', 60)
-    gameSurf = gameOverFont.render('Game', True, WHITE)
-    overSurf = gameOverFont.render('Over', True, WHITE)
+def show_game_over_screen(winning_player, use_color):
+    game_over_font = pygame.font.Font('freesansbold.ttf', 60)
+    game_surf = game_over_font.render('Game', True, WHITE)
+    over_surf = game_over_font.render('Over', True, WHITE)
 
     winning_string = 'Player {} Wins!'.format(winning_player)
-    
-    playerSurf = gameOverFont.render(winning_string, True, color)
-    
-    gameRect = gameSurf.get_rect()
-    overRect = overSurf.get_rect()
-    playerRect = playerSurf.get_rect()
-    gameRect.midtop = (WINDOWWIDTH / 2, 10)
-    overRect.midtop = (WINDOWWIDTH / 2, gameRect.height + 10 + 25)
-    playerRect.midtop = (WINDOWWIDTH / 2, gameRect.height + 100 + overRect.height)
 
-    DISPLAYSURF.blit(gameSurf, gameRect)
-    DISPLAYSURF.blit(overSurf, overRect)
-    DISPLAYSURF.blit(playerSurf, playerRect)
+    player_surf = game_over_font.render(winning_string, True, use_color)
+
+    game_rect = game_surf.get_rect()
+    over_rect = over_surf.get_rect()
+    player_rect = player_surf.get_rect()
+    game_rect.midtop = (WINDOWWIDTH / 2, 10)
+    over_rect.midtop = (WINDOWWIDTH / 2, game_rect.height + 10 + 25)
+    player_rect.midtop = (WINDOWWIDTH / 2, game_rect.height + 100 + over_rect.height)
+
+    DISPLAYSURF.blit(game_surf, game_rect)
+    DISPLAYSURF.blit(over_surf, over_rect)
+    DISPLAYSURF.blit(player_surf, player_rect)
     draw_press_key_msg()
     pygame.display.update()
     pygame.time.wait(500)
-#KRT 14/06/2012 rewrite event detection to deal with mouse use
-    pygame.event.get()  #clear out event queue
+    # KRT 14/06/2012 rewrite event detection to deal with mouse use
+    pygame.event.get()  # clear out event queue
     while True:
         key = check_for_key_press()
         if key:
             return key
-#KRT 12/06/2012 reduce processor loading in gameover screen.
+        # KRT 12/06/2012 reduce processor loading in game over screen.
         pygame.time.wait(100)
 
-def draw_score(player_number, score, color):
-    scoreSurf = BASICFONT.render('Score: %s' % (score), True, color)
-    scoreRect = scoreSurf.get_rect()
-    scoreRect.topleft = (INFO_POSITION[player_number]['x'], INFO_POSITION[player_number]['y'])
-    DISPLAYSURF.blit(scoreSurf, scoreRect)
+
+def draw_score(player_number, score, use_color):
+    score_surf = BASICFONT.render('Score: %s' % score, True, use_color)
+    score_rect = score_surf.get_rect()
+    score_rect.topleft = (INFO_POSITION[player_number]['x'], INFO_POSITION[player_number]['y'])
+    DISPLAYSURF.blit(score_surf, score_rect)
 
 
 def draw_turbos(player_number, turbos, worm_color):
@@ -761,8 +763,8 @@ def draw_portal(portal_coords, portal_color):
     for coord in portal_coords:
         x = coord['x'] * CELLSIZE
         y = coord['y'] * CELLSIZE
-        portalSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
-        pygame.draw.rect(DISPLAYSURF, portal_color, portalSegmentRect)
+        portal_segment_rect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+        pygame.draw.rect(DISPLAYSURF, portal_color, portal_segment_rect)
 
 
 def draw_fruit(coord, fruit_color=RED, is_shiny=False, is_bad=False):
@@ -770,19 +772,19 @@ def draw_fruit(coord, fruit_color=RED, is_shiny=False, is_bad=False):
         return
     x = coord['x'] * CELLSIZE
     y = coord['y'] * CELLSIZE
-    fruitRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
-    pygame.draw.rect(DISPLAYSURF, fruit_color, fruitRect)
+    fruit_rect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+    pygame.draw.rect(DISPLAYSURF, fruit_color, fruit_rect)
 
     if is_bad:
-        fruitRect = pygame.Rect(x+3, y+3, CELLSIZE-14, CELLSIZE-14)
-        pygame.draw.rect(DISPLAYSURF, BLACK, fruitRect)       
+        fruit_rect = pygame.Rect(x + 3, y + 3, CELLSIZE - 14, CELLSIZE - 14)
+        pygame.draw.rect(DISPLAYSURF, BLACK, fruit_rect)
     elif is_shiny:
-        fruitRect = pygame.Rect(x+3, y+3, CELLSIZE-14, CELLSIZE-14)
-        pygame.draw.rect(DISPLAYSURF, WHITE, fruitRect)
+        fruit_rect = pygame.Rect(x + 3, y + 3, CELLSIZE - 14, CELLSIZE - 14)
+        pygame.draw.rect(DISPLAYSURF, WHITE, fruit_rect)
 
 
 def draw_grid(grid_color=DARKGRAY):
-    for x in range(0, WINDOWWIDTH, CELLSIZE):   # draw vertical lines
+    for x in range(0, WINDOWWIDTH, CELLSIZE):  # draw vertical lines
         pygame.draw.line(DISPLAYSURF, grid_color, (x, 0), (x, WINDOWHEIGHT))
     for y in range(0, WINDOWHEIGHT, CELLSIZE):  # draw horizontal lines
         pygame.draw.line(DISPLAYSURF, grid_color, (0, y), (WINDOWWIDTH, y))
