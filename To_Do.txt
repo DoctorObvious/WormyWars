@@ -1,0 +1,13 @@
+
+
+- Big Apple: Maybe 4 squares or maybe just overly big 1 square. Or maybe shiny. Comes every 10 apples, grows you by 20.
+
+- Apple Variation: You grow by the number apple you ate.
+
+- Safe Spawn: Make a square that other worms can't enter as you fade in for 2 seconds
+
+- Grape: Fade out and fade back in.
+
+- Levels: After eating 10 apples, start a new level with more blocks to avoid
+
+- Start screen with choices for players and wormbots.
