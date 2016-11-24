@@ -11,3 +11,5 @@
 - Start screen with choices for players and wormbots.
 
 - Clean up some timers, perhaps have a timer class
+
+- Game over screen: Make it look better, don't print brackets, and pick winners when score is tied if possible.

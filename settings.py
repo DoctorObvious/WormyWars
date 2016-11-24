@@ -3,7 +3,7 @@ from pygame.locals import *
 
 NUM_LIVES = 3
 FPS = 8
-GROW_BY = 4
+GROW_BY = 4                     # may be co-opted in the code and worms may grow by other rules.
 DOUBLE_CLICK_TIME = 0.3         # in seconds
 DYING_TIME_IN_SECS = 1.0                # in seconds
 

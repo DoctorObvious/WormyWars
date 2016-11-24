@@ -167,6 +167,7 @@ def run_game(num_players, num_robots=0):
     blueberry = []
     lime = []
 
+    apple_number = 1
     frame_count = 0.0
     pause_end_time = 0.0
 
@@ -359,12 +360,14 @@ def run_game(num_players, num_robots=0):
                             apple = get_safe_fruit_location(existing_coords)  # set a new apple somewhere
                             apple_time = current_time()
                             sound_happy.play()
-                            worms[ii].add_score(GROW_BY)
+                            worms[ii].add_score(apple_number)
                             if apple_is_bad:
                                 worms[ii].shrink()
                             else:
-                                worms[ii].grow(GROW_BY)
+                                worms[ii].grow(apple_number)
                                 worms[ii].add_turbo()
+
+                            apple_number += 1
 
                         if len(golden_apple) > 0:
                             # check if a worm has eaten a golden_apple
