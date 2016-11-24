@@ -77,6 +77,7 @@ class Worm:
     turbo_end_time = []
     freeze_end_time = []
     invisible_end_time = []
+    fade_start_time = []
     is_shrinking = []
 
     started_dying_time = []
@@ -127,6 +128,7 @@ class Worm:
             self.turbo_end_time = 0
             self.freeze_end_time = 0
             self.invisible_end_time = 0
+            self.fade_start_time = -100.0
             self.is_shrinking = False
             self._direction = RIGHT
         else:
@@ -150,8 +152,15 @@ class Worm:
         else:
             return elapsed_time(self.started_dying_time) > DYING_TIME_IN_SECS
 
+    def is_fading_in(self):
+        return self.invisible_end_time < current_time() < self.invisible_end_time + NUM_SECS_IN_FADE
+
+    def is_fading_out(self):
+        return (self.invisible_end_time - NUM_SECS_IN_INVISIBLE) < current_time() \
+               < (self.invisible_end_time - NUM_SECS_IN_INVISIBLE + NUM_SECS_IN_FADE)
+
     def is_visible(self):
-        return current_time() > self.invisible_end_time
+        return self.is_fading_out() or self.is_fading_in() or current_time() > self.invisible_end_time
     
     def is_in_turbo(self):
         return current_time() < self.turbo_end_time
@@ -167,6 +176,7 @@ class Worm:
 
     def make_invisible(self):
         if self.is_visible():
+            self.fade_start_time = current_time()
             self.invisible_end_time = current_time() + NUM_SECS_IN_INVISIBLE
         else:
             self.invisible_end_time += NUM_SECS_IN_INVISIBLE
@@ -224,6 +234,12 @@ class Worm:
                 if self.is_dying:
                     block_color = utils.get_pulse_color([block_color, BLACK], pulse_time=DYING_TIME_IN_SECS*2.0,
                                                         pulse_start_time=self.started_dying_time)
+                elif self.is_fading_out():
+                    block_color = utils.get_pulse_color([block_color, BLACK], pulse_time=NUM_SECS_IN_FADE*2.0,
+                                                        pulse_start_time=self.fade_start_time)
+                elif self.is_fading_in():
+                    block_color = utils.get_pulse_color([BLACK, block_color], pulse_time=NUM_SECS_IN_FADE*2.0,
+                                                        pulse_start_time=self.fade_start_time+NUM_SECS_IN_INVISIBLE)
                 elif not self.is_visible():
                     block_color = BLACK
                 worm_outer_rect = pygame.Rect(x + use_outer_offset, y + use_outer_offset,
@@ -249,6 +265,12 @@ class Worm:
                     if self.is_dying:
                         block_color = utils.get_pulse_color([block_color, BLACK], pulse_time=DYING_TIME_IN_SECS*1.0,
                                                             pulse_start_time=self.started_dying_time)
+                    elif self.is_fading_out():
+                        block_color = utils.get_pulse_color([block_color, BLACK], pulse_time=NUM_SECS_IN_FADE*2.0,
+                                                            pulse_start_time=self.fade_start_time)
+                    elif self.is_fading_in():
+                        block_color = utils.get_pulse_color([BLACK, block_color], pulse_time=NUM_SECS_IN_FADE*2.0,
+                                                            pulse_start_time=self.fade_start_time)
                     if not self.is_visible():
                         block_color = BLACK
 

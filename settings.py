@@ -10,6 +10,7 @@ DYING_TIME_IN_SECS = 1.0                # in seconds
 GRAPE_APPEAR_TIME = 20.         # in seconds
 GRAPE_POINTS = 17
 NUM_SECS_IN_INVISIBLE = 5.0     # in seconds (how long does it last)
+NUM_SECS_IN_FADE = 0.5          # in seconds
 
 BANANA_APPEAR_TIME = 10.        # in seconds
 BANANA_POINTS = 10
