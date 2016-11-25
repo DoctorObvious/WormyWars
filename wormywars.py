@@ -703,31 +703,38 @@ def get_random_location():
     return {'x': random.randint(0, CELLWIDTH - 1), 'y': random.randint(0, CELLHEIGHT - 1)}
 
 
-def show_game_over_screen(winning_player, use_color):
-    game_over_font = pygame.font.Font('freesansbold.ttf', 60)
-    game_surf = game_over_font.render('Game', True, WHITE)
-    over_surf = game_over_font.render('Over', True, WHITE)
+def show_game_over_screen(winning_players, player_color):
+    game_over_font = pygame.font.Font('freesansbold.ttf', 80)
+    winning_player_font = pygame.font.Font('freesansbold.ttf', 50)
 
-    winning_string = 'Player {} Wins!'.format(winning_player)
+    winning_string = 'Player '
+    for ii in range(len(winning_players)):
+        winning_string += '{}'.format(winning_players[ii])
+        if ii < len(winning_players) - 1:
+            winning_string += ','
+        winning_string += ' '
 
-    player_surf = game_over_font.render(winning_string, True, use_color)
+    winning_string += 'Wins!'
 
-    game_rect = game_surf.get_rect()
-    over_rect = over_surf.get_rect()
-    player_rect = player_surf.get_rect()
-    game_rect.midtop = (WINDOWWIDTH / 2, 10)
-    over_rect.midtop = (WINDOWWIDTH / 2, game_rect.height + 10 + 25)
-    player_rect.midtop = (WINDOWWIDTH / 2, game_rect.height + 100 + over_rect.height)
-
-    DISPLAYSURF.blit(game_surf, game_rect)
-    DISPLAYSURF.blit(over_surf, over_rect)
-    DISPLAYSURF.blit(player_surf, player_rect)
     draw_press_key_msg()
-    pygame.display.update()
     pygame.time.wait(500)
     # KRT 14/06/2012 rewrite event detection to deal with mouse use
     pygame.event.get()  # clear out event queue
     while True:
+        use_color = get_pulse_color(GAME_OVER_COLORS, pulse_time=8.0)
+        game_over_surf = game_over_font.render('Game Over', True, use_color)
+        player_surf = winning_player_font.render(winning_string, True, player_color)
+
+        game_over_rect = game_over_surf.get_rect()
+        player_rect = player_surf.get_rect()
+        game_over_rect.midtop = (WINDOWWIDTH / 2, WINDOWHEIGHT / 4)
+        player_rect.midtop = (WINDOWWIDTH / 2, game_over_rect.height + WINDOWHEIGHT / 4 + 100)
+
+        DISPLAYSURF.blit(game_over_surf, game_over_rect)
+        DISPLAYSURF.blit(player_surf, player_rect)
+
+        pygame.display.update()
+
         key = check_for_key_press()
         if key:
             return key

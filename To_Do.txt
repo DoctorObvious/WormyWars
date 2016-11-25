@@ -1,8 +1,6 @@
 
 
-- Big Apple: Maybe 4 squares or maybe just overly big 1 square. Or maybe shiny. Comes every 10 apples, grows you by 20.
-
-- Apple Variation: You grow by the number apple you ate.
+- Big Apple: Maybe 4 squares or maybe just overly big 1 square. Or maybe shiny. Comes every 10 apples, grows you by 20?
 
 - Safe Spawn: Make a square that other worms can't enter as you fade in for 2 seconds
 
@@ -11,5 +9,3 @@
 - Start screen with choices for players and wormbots.
 
 - Clean up some timers, perhaps have a timer class
-
-- Game over screen: Make it look better, don't print brackets, and pick winners when score is tied if possible.

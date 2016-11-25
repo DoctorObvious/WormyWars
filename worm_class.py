@@ -89,12 +89,16 @@ class Worm:
     is_robot = False
     starting_turbos = NUM_TURBOS
 
+    apples_eaten_this_life = []
+    apples_eaten_ever = []
+
     def __init__(self, worm_color, starting_coords, player_number):
         self.is_in_play = True
         self.color = worm_color
         self.player_number = player_number
         self.num_lives = NUM_LIVES + 1
         self.score = 0
+        self.apples_eaten_ever = 0
         self.last_shrink_time = -100
         self.last_press_time = -100
         self.last_key_press = None
@@ -124,6 +128,7 @@ class Worm:
             self.is_in_play = True
             self.is_dying = False
             self.num_to_grow = 0
+            self.apples_eaten_this_life = 0
             self.num_turbos = self.starting_turbos
             self.turbo_end_time = 0
             self.freeze_end_time = 0
