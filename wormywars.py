@@ -127,6 +127,7 @@ def get_portal_coords():
 
 def run_game(num_players, num_robots=0):
     start_the_clock()
+    num_humans = num_players - num_robots
 
     # Create worms
     worms = []
@@ -211,9 +212,16 @@ def run_game(num_players, num_robots=0):
 
                 if event.type == QUIT:
                     terminate()
+                    
+                if event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        terminate()
+                    elif event.key == K_F5:
+                        for worm in worms:
+                            worm.terminate()
 
                 # See how key presses affect direction for each worm!
-                for ii in range(num_players):
+                for ii in range(num_humans):
                     direction = worms[ii].get_direction()
                     new_direction = direction
 
@@ -235,12 +243,7 @@ def run_game(num_players, num_robots=0):
                             key_press = DOWN
                             if direction != UP:
                                 new_direction = DOWN
-                        elif event.key == K_ESCAPE:
-                            terminate()
-                        elif event.key == K_F5:
-                            for worm in worms:
-                                worm.terminate()
-
+                                
                         if key_press == worms[ii].last_key_press \
                                 and current_time() - worms[ii].last_press_time < DOUBLE_CLICK_TIME:
                             # Double click in same direction for turbo
