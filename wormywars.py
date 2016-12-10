@@ -289,11 +289,6 @@ def run_game(num_players, num_robots=0):
                                 or worm_coords[HEAD]['y'] == -1 or worm_coords[HEAD]['y'] == CELLHEIGHT:
                             worms[ii].die()
 
-                        # check if the worm has hit its body
-                        for worm_body in worm_coords[1:]:
-                            if same_coord(worm_coords[HEAD], worm_body):
-                                worms[ii].die()
-
                         # check if the worm has hit a portal
                         hit_portal = False
                         for portal_coord in portal_coords:
@@ -335,6 +330,11 @@ def run_game(num_players, num_robots=0):
                                     worm_coords[HEAD]['y'] = UP_PORTAL_Y + 1
                                 else:
                                     worm_coords[HEAD]['y'] = UP_PORTAL_Y - 1
+
+                        # check if the worm has hit its body
+                        for worm_body in worm_coords[1:]:
+                            if same_coord(worm_coords[HEAD], worm_body):
+                                worms[ii].die()
 
                         # check if the worm has hit another worm
                         for jj in range(num_players):
