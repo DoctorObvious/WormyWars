@@ -105,3 +105,12 @@ ALL_DOWNS = [K_DOWN, K_s, K_k, K_KP5]
 WORM_COLORS = [GREEN, BLUE, RED, LIGHTGRAY]
 
 HEAD = 0  # syntactic sugar: index of the worm's head
+
+# Skill levels
+BEGINNER = 'Beginner'
+INTERMEDIATE = 'Intermediate'
+ADVANCED = 'Advanced'
+EXPERT = 'Expert'
+SKILL_LEVELS = [BEGINNER, INTERMEDIATE, ADVANCED, EXPERT]
+
+SKILL_SPEEDS = [4,        8,            12,        16]

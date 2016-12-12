@@ -31,6 +31,11 @@ def main():
     num_players = 1
     num_robots = 0
 
+    skill = show_skill_screen()
+
+    global FPS
+    FPS = SKILL_SPEEDS[skill]
+    
     key = show_start_screen()
 
     # Keep playing more games until escape
@@ -68,6 +73,9 @@ def main():
         winning_player = run_game(num_players, num_robots)
         key = show_game_over_screen(winning_player, WORM_COLORS[winning_player[0] - 1])
 
+        skill = show_skill_screen()
+        FPS = SKILL_SPEEDS[skill]
+        
 
 def get_safe_starting_coords(player_number, existing_coords=None):
     start_x = 5
@@ -696,7 +704,45 @@ def show_start_screen():
         degrees1 += 0  # rotate by 3 degrees each frame
         degrees2 += 7  # rotate by 7 degrees each frame
 
+def show_skill_screen():
+    level_font = pygame.font.Font('freesansbold.ttf', 50)
+    pygame.event.get()  # clear out event queue
+    
+    while True:
+        DISPLAYSURF.fill(BGCOLOR)
 
+        use_color_1 = get_pulse_color([GREEN, PURPLE, RED, BLUE], pulse_time=3.0) 
+        surf_1 = level_font.render('Choose skill:', True, use_color_1)
+        rect_1 = surf_1.get_rect()
+        rect_1.midtop = (WINDOWWIDTH / 2, WINDOWHEIGHT / 4)
+        DISPLAYSURF.blit(surf_1, rect_1)
+
+        use_color_2 = get_pulse_color([BLUE, BLACK, PURPLE, BLACK], pulse_time=3.0) 
+        for ii in range(len(SKILL_LEVELS)):
+            level_str = SKILL_LEVELS[ii]
+            level_num = ii + 1
+            
+            surf_2 = level_font.render(level_str + ': Press ' + str(level_num), True, use_color_2)
+            rect_2 = surf_2.get_rect()
+            rect_2.midtop = (WINDOWWIDTH / 2, 0.4 * WINDOWHEIGHT + ii*60)
+            DISPLAYSURF.blit(surf_2, rect_2)
+
+        pygame.display.update()
+
+        key = check_for_key_press()
+        if key:
+            if key == K_1:
+                return 0
+            elif key == K_2:
+                return 1
+            elif key == K_3:
+                return 2
+            elif key == K_4:
+                return 3
+ 
+        FPSCLOCK.tick(FPS)
+        
+    
 def terminate():
     pygame.quit()
     sys.exit()
