@@ -31,7 +31,7 @@ def main():
     num_players = 1
     num_robots = 0
 
-    skill = show_skill_screen()
+    skill = show_choice_screen()
 
     global FPS
     FPS = SKILL_SPEEDS[skill]
@@ -703,6 +703,103 @@ def show_start_screen():
         FPSCLOCK.tick(FPS)
         degrees1 += 0  # rotate by 3 degrees each frame
         degrees2 += 7  # rotate by 7 degrees each frame
+
+
+
+def show_choice_screen():
+
+    title_font = pygame.font.Font('freesansbold.ttf', 50)
+
+    choice_font = pygame.font.Font('freesansbold.ttf', 25)
+    pygame.event.get()  # clear out event queue
+
+    skill = 2
+    num_players = 2
+    num_wormbots = 0
+    
+    while True:
+        DISPLAYSURF.fill(BGCOLOR)
+        use_color_1 = get_pulse_color([GREEN, PURPLE, RED, BLUE], pulse_time=3.0) 
+        use_color_2 = get_pulse_color([BLUE, BLACK, PURPLE, BLACK], pulse_time=3.0) 
+
+        # Title section
+        color_title = get_pulse_color([GREEN, PURPLE, RED, BLUE], pulse_time=3.0) 
+        surf_title = title_font.render('Wormy Wars!', True, color_title)
+        rect_title = surf_title.get_rect()
+        rect_title.midtop = (WINDOWWIDTH / 2, WINDOWHEIGHT / 16)
+        DISPLAYSURF.blit(surf_title, rect_title)
+
+        # Skill section
+        surf_1 = choice_font.render('Choose Skill:', True, use_color_1)
+        rect_1 = surf_1.get_rect()
+        rect_1.midtop = (3 * WINDOWWIDTH / 4, WINDOWHEIGHT / 4)
+        DISPLAYSURF.blit(surf_1, rect_1)
+
+        for ii in range(len(SKILL_LEVELS)):
+            level_str = SKILL_LEVELS[ii]
+            level_num = ii + 1
+
+            if skill == ii:
+                use_color = use_color_1
+            else:
+                use_color = use_color_2
+            surf_2 = choice_font.render(level_str + ': Press ' + str(level_num), True, use_color)
+            rect_2 = surf_2.get_rect()
+            rect_2.midtop = (3 * WINDOWWIDTH / 4, 0.3 * WINDOWHEIGHT + ii*30)
+            DISPLAYSURF.blit(surf_2, rect_2)
+
+        # Number of players section
+        surf_1 = choice_font.render('Number of Players:', True, use_color_1)
+        rect_1 = surf_1.get_rect()
+        rect_1.midtop = (WINDOWWIDTH / 4, WINDOWHEIGHT / 4)
+        DISPLAYSURF.blit(surf_1, rect_1)
+
+        for ii in range(len(PLAYER_STRINGS)):
+            number_str = PLAYER_STRINGS[ii]
+            number_num = ii + 1
+            if num_players == number_num:
+                use_color = use_color_1
+            else:
+                use_color = use_color_2
+            surf_3 = choice_font.render(number_str + ': Press ' + str(number_num), True, use_color)
+            rect_3 = surf_3.get_rect()
+            rect_3.midtop = (WINDOWWIDTH / 4, 0.3 * WINDOWHEIGHT + ii*30)
+            DISPLAYSURF.blit(surf_3, rect_3)
+
+        # Number of wormbots section
+        surf_1 = choice_font.render('Number of Wormbots:', True, use_color_1)
+        rect_1 = surf_1.get_rect()
+        rect_1.midtop = (WINDOWWIDTH / 4, 2 * WINDOWHEIGHT / 4)
+        DISPLAYSURF.blit(surf_1, rect_1)
+
+        for ii in range(len(WORMBOT_STRINGS)):
+            number_str = WORMBOT_STRINGS[ii]
+            number_num = ii
+            if num_wormbots == number_num:
+                use_color = use_color_1
+            else:
+                use_color = use_color_2
+            surf_3 = choice_font.render(number_str + ': Press ' + str(number_num), True, use_color)
+            rect_3 = surf_3.get_rect()
+            rect_3.midtop = (WINDOWWIDTH / 4, 0.55 * WINDOWHEIGHT + ii*30)
+            DISPLAYSURF.blit(surf_3, rect_3)
+            
+        #
+        pygame.display.update()
+
+        key = check_for_key_press()
+        if key:
+            if key == K_1:
+                return 0
+            elif key == K_2:
+                return 1
+            elif key == K_3:
+                return 2
+            elif key == K_4:
+                return 3
+ 
+        FPSCLOCK.tick(FPS)
+
 
 def show_skill_screen():
     level_font = pygame.font.Font('freesansbold.ttf', 50)
