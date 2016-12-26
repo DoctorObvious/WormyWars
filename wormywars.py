@@ -28,53 +28,50 @@ def main():
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     pygame.display.set_caption('Wormy Wars!')
 
-    num_players = 1
-    num_robots = 0
-
-    skill = show_choice_screen()
+    show_splash_screen()
 
     global FPS
-    FPS = SKILL_SPEEDS[skill]
-    
-    key = show_start_screen()
+    num_players = 1
+    num_robots = 0
+    skill = 1
 
     # Keep playing more games until escape
     while True:
-        if key == K_1:
-            num_players = 1
-            num_robots = 0
-        elif key == K_2:
-            num_players = 2
-            num_robots = 0
-        elif key == K_3:
-            num_players = 3
-            num_robots = 0
-        elif key == K_4:
-            num_players = 4
-            num_robots = 0
-        elif key == K_F1:
-            num_players = 1
-            num_robots = 1
-        elif key == K_F2:
-            num_players = 2
-            num_robots = 1
-        elif key == K_F3:
-            num_players = 3
-            num_robots = 1
-        elif key == K_F4:
-            num_players = 4
-            num_robots = 1
-        elif key == K_F6:
-            num_players = 4
-            num_robots = 2
-        elif key == K_r:
-            num_players = 4
-            num_robots = 4
-        winning_player = run_game(num_players, num_robots)
-        key = show_game_over_screen(winning_player, WORM_COLORS[winning_player[0] - 1])
-
-        skill = show_skill_screen()
+        num_players, num_robots, skill = show_choice_screen(num_players, num_robots, skill)
         FPS = SKILL_SPEEDS[skill]
+
+        # if key == K_1:
+        #     num_players = 1
+        #     num_robots = 0
+        # elif key == K_2:
+        #     num_players = 2
+        #     num_robots = 0
+        # elif key == K_3:
+        #     num_players = 3
+        #     num_robots = 0
+        # elif key == K_4:
+        #     num_players = 4
+        #     num_robots = 0
+        # elif key == K_F1:
+        #     num_players = 1
+        #     num_robots = 1
+        # elif key == K_F2:
+        #     num_players = 2
+        #     num_robots = 1
+        # elif key == K_F3:
+        #     num_players = 3
+        #     num_robots = 1
+        # elif key == K_F4:
+        #     num_players = 4
+        #     num_robots = 1
+        # elif key == K_F6:
+        #     num_players = 4
+        #     num_robots = 2
+        # elif key == K_r:
+        #     num_players = 4
+        #     num_robots = 4
+        winning_player = run_game(num_players, num_robots)
+        show_game_over_screen(winning_player, WORM_COLORS[winning_player[0] - 1])
         
 
 def get_safe_starting_coords(player_number, existing_coords=None):
@@ -133,9 +130,12 @@ def get_portal_coords():
     return portal_coords, portal_names
 
 
-def run_game(num_players, num_robots=0):
+def run_game(num_humans, num_robots=0):
     start_the_clock()
-    num_humans = num_players - num_robots
+    # num_humans = num_players - num_robots
+    num_players = num_humans + num_robots
+
+    num_robots = min(num_robots, 4-num_humans)
 
     # Create worms
     worms = []
@@ -644,9 +644,9 @@ def get_pause_end_time(pause_length):
 
 
 def draw_press_key_msg():
-    press_key_surf = BASICFONT.render('Press # of players (1-4) to play.', True, LIGHTGRAY)
+    press_key_surf = BASICFONT.render('Press key to play, escape to stop', True, LIGHTGRAY)
     press_key_rect = press_key_surf.get_rect()
-    press_key_rect.topleft = (WINDOWWIDTH - 300, WINDOWHEIGHT - 30)
+    press_key_rect.midtop = (0.5 * WINDOWWIDTH, WINDOWHEIGHT - 30)
     DISPLAYSURF.blit(press_key_surf, press_key_rect)
 
 
@@ -663,7 +663,7 @@ def check_for_key_press():
     return None
 
 
-def show_start_screen():
+def show_splash_screen():
     title_font = pygame.font.Font('freesansbold.ttf', 100)
     # title_surf_1 = title_font.render('Wormy Wars!', True, WHITE, DARKGREEN)
     # title_surf_1 = title_font.render('Wormy Wars!', True, WHITE)
@@ -705,17 +705,23 @@ def show_start_screen():
         degrees2 += 7  # rotate by 7 degrees each frame
 
 
-
-def show_choice_screen():
+def show_choice_screen(num_players=None, num_wormbots=None, skill=None):
 
     title_font = pygame.font.Font('freesansbold.ttf', 50)
-
     choice_font = pygame.font.Font('freesansbold.ttf', 25)
+
+    surf_enter = BASICFONT.render('Press Enter to play', True, LIGHTGRAY)
+    rect_enter = surf_enter.get_rect()
+    rect_enter.midtop = (2 * WINDOWWIDTH / 4, 0.90 * WINDOWHEIGHT)
+
     pygame.event.get()  # clear out event queue
 
-    skill = 2
-    num_players = 2
-    num_wormbots = 0
+    if skill is None:
+        skill = 2
+    if num_players is None:
+        num_players = 2
+    if num_wormbots is None:
+        num_wormbots = 0
     
     while True:
         DISPLAYSURF.fill(BGCOLOR)
@@ -730,46 +736,45 @@ def show_choice_screen():
         DISPLAYSURF.blit(surf_title, rect_title)
 
         # Skill section
-        surf_1 = choice_font.render('Choose Skill:', True, use_color_1)
+        surf_1 = choice_font.render('Choose Skill (S):', True, use_color_1)
         rect_1 = surf_1.get_rect()
         rect_1.midtop = (3 * WINDOWWIDTH / 4, WINDOWHEIGHT / 4)
         DISPLAYSURF.blit(surf_1, rect_1)
 
         for ii in range(len(SKILL_LEVELS)):
             level_str = SKILL_LEVELS[ii]
-            level_num = ii + 1
 
             if skill == ii:
                 use_color = use_color_1
             else:
                 use_color = use_color_2
-            surf_2 = choice_font.render(level_str + ': Press ' + str(level_num), True, use_color)
+            surf_2 = choice_font.render(level_str, True, use_color)
             rect_2 = surf_2.get_rect()
-            rect_2.midtop = (3 * WINDOWWIDTH / 4, 0.3 * WINDOWHEIGHT + ii*30)
+            rect_2.midtop = (3 * WINDOWWIDTH / 4, 0.3 * WINDOWHEIGHT + ii * 30)
             DISPLAYSURF.blit(surf_2, rect_2)
 
         # Number of players section
-        surf_1 = choice_font.render('Number of Players:', True, use_color_1)
+        surf_1 = choice_font.render('Number of Players (P):', True, use_color_1)
         rect_1 = surf_1.get_rect()
         rect_1.midtop = (WINDOWWIDTH / 4, WINDOWHEIGHT / 4)
         DISPLAYSURF.blit(surf_1, rect_1)
 
         for ii in range(len(PLAYER_STRINGS)):
             number_str = PLAYER_STRINGS[ii]
-            number_num = ii + 1
+            number_num = ii
             if num_players == number_num:
                 use_color = use_color_1
             else:
                 use_color = use_color_2
-            surf_3 = choice_font.render(number_str + ': Press ' + str(number_num), True, use_color)
+            surf_3 = choice_font.render(number_str, True, use_color)
             rect_3 = surf_3.get_rect()
-            rect_3.midtop = (WINDOWWIDTH / 4, 0.3 * WINDOWHEIGHT + ii*30)
+            rect_3.midtop = (WINDOWWIDTH / 4, 0.3 * WINDOWHEIGHT + ii * 30)
             DISPLAYSURF.blit(surf_3, rect_3)
 
         # Number of wormbots section
-        surf_1 = choice_font.render('Number of Wormbots:', True, use_color_1)
+        surf_1 = choice_font.render('Number of Wormbots (B):', True, use_color_1)
         rect_1 = surf_1.get_rect()
-        rect_1.midtop = (WINDOWWIDTH / 4, 2 * WINDOWHEIGHT / 4)
+        rect_1.midtop = (WINDOWWIDTH / 4, 0.55 * WINDOWHEIGHT)
         DISPLAYSURF.blit(surf_1, rect_1)
 
         for ii in range(len(WORMBOT_STRINGS)):
@@ -779,65 +784,76 @@ def show_choice_screen():
                 use_color = use_color_1
             else:
                 use_color = use_color_2
-            surf_3 = choice_font.render(number_str + ': Press ' + str(number_num), True, use_color)
+            surf_3 = choice_font.render(number_str, True, use_color)
             rect_3 = surf_3.get_rect()
-            rect_3.midtop = (WINDOWWIDTH / 4, 0.55 * WINDOWHEIGHT + ii*30)
+            rect_3.midtop = (WINDOWWIDTH / 4, 0.60 * WINDOWHEIGHT + ii*30)
             DISPLAYSURF.blit(surf_3, rect_3)
             
+        #
+        DISPLAYSURF.blit(surf_enter, rect_enter)
+
         #
         pygame.display.update()
 
         key = check_for_key_press()
         if key:
-            if key == K_1:
-                return 0
+            if key == K_p:
+                num_players = (num_players + 1) % len(PLAYER_STRINGS)
+            if key == K_b:
+                num_wormbots = (num_wormbots + 1) % len(WORMBOT_STRINGS)
+            if key == K_s:
+                skill = (skill + 1) % len(SKILL_LEVELS)
+            elif key == K_1:
+                num_players = 1
             elif key == K_2:
-                return 1
+                num_players = 2
             elif key == K_3:
-                return 2
+                num_players = 3
             elif key == K_4:
-                return 3
- 
-        FPSCLOCK.tick(FPS)
+                num_players = 4
+            elif key == K_RETURN:
+                return num_players, num_wormbots, skill
+
+        FPSCLOCK.tick(50)
 
 
-def show_skill_screen():
-    level_font = pygame.font.Font('freesansbold.ttf', 50)
-    pygame.event.get()  # clear out event queue
-    
-    while True:
-        DISPLAYSURF.fill(BGCOLOR)
-
-        use_color_1 = get_pulse_color([GREEN, PURPLE, RED, BLUE], pulse_time=3.0) 
-        surf_1 = level_font.render('Choose skill:', True, use_color_1)
-        rect_1 = surf_1.get_rect()
-        rect_1.midtop = (WINDOWWIDTH / 2, WINDOWHEIGHT / 4)
-        DISPLAYSURF.blit(surf_1, rect_1)
-
-        use_color_2 = get_pulse_color([BLUE, BLACK, PURPLE, BLACK], pulse_time=3.0) 
-        for ii in range(len(SKILL_LEVELS)):
-            level_str = SKILL_LEVELS[ii]
-            level_num = ii + 1
-            
-            surf_2 = level_font.render(level_str + ': Press ' + str(level_num), True, use_color_2)
-            rect_2 = surf_2.get_rect()
-            rect_2.midtop = (WINDOWWIDTH / 2, 0.4 * WINDOWHEIGHT + ii*60)
-            DISPLAYSURF.blit(surf_2, rect_2)
-
-        pygame.display.update()
-
-        key = check_for_key_press()
-        if key:
-            if key == K_1:
-                return 0
-            elif key == K_2:
-                return 1
-            elif key == K_3:
-                return 2
-            elif key == K_4:
-                return 3
- 
-        FPSCLOCK.tick(FPS)
+# def show_skill_screen():
+#     level_font = pygame.font.Font('freesansbold.ttf', 50)
+#     pygame.event.get()  # clear out event queue
+#
+#     while True:
+#         DISPLAYSURF.fill(BGCOLOR)
+#
+#         use_color_1 = get_pulse_color([GREEN, PURPLE, RED, BLUE], pulse_time=3.0)
+#         surf_1 = level_font.render('Choose skill:', True, use_color_1)
+#         rect_1 = surf_1.get_rect()
+#         rect_1.midtop = (WINDOWWIDTH / 2, WINDOWHEIGHT / 4)
+#         DISPLAYSURF.blit(surf_1, rect_1)
+#
+#         use_color_2 = get_pulse_color([BLUE, BLACK, PURPLE, BLACK], pulse_time=3.0)
+#         for ii in range(len(SKILL_LEVELS)):
+#             level_str = SKILL_LEVELS[ii]
+#             level_num = ii + 1
+#
+#             surf_2 = level_font.render(level_str + ': Press ' + str(level_num), True, use_color_2)
+#             rect_2 = surf_2.get_rect()
+#             rect_2.midtop = (WINDOWWIDTH / 2, 0.4 * WINDOWHEIGHT + ii*60)
+#             DISPLAYSURF.blit(surf_2, rect_2)
+#
+#         pygame.display.update()
+#
+#         key = check_for_key_press()
+#         if key:
+#             if key == K_1:
+#                 return 0
+#             elif key == K_2:
+#                 return 1
+#             elif key == K_3:
+#                 return 2
+#             elif key == K_4:
+#                 return 3
+#
+#         FPSCLOCK.tick(FPS)
         
     
 def terminate():
