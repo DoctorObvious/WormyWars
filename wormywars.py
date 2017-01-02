@@ -39,37 +39,6 @@ def main():
     while True:
         num_players, num_robots, skill = show_choice_screen(num_players, num_robots, skill)
         FPS = SKILL_SPEEDS[skill]
-
-        # if key == K_1:
-        #     num_players = 1
-        #     num_robots = 0
-        # elif key == K_2:
-        #     num_players = 2
-        #     num_robots = 0
-        # elif key == K_3:
-        #     num_players = 3
-        #     num_robots = 0
-        # elif key == K_4:
-        #     num_players = 4
-        #     num_robots = 0
-        # elif key == K_F1:
-        #     num_players = 1
-        #     num_robots = 1
-        # elif key == K_F2:
-        #     num_players = 2
-        #     num_robots = 1
-        # elif key == K_F3:
-        #     num_players = 3
-        #     num_robots = 1
-        # elif key == K_F4:
-        #     num_players = 4
-        #     num_robots = 1
-        # elif key == K_F6:
-        #     num_players = 4
-        #     num_robots = 2
-        # elif key == K_r:
-        #     num_players = 4
-        #     num_robots = 4
         winning_player = run_game(num_players, num_robots)
         show_game_over_screen(winning_player, WORM_COLORS[winning_player[0] - 1])
         
@@ -132,10 +101,9 @@ def get_portal_coords():
 
 def run_game(num_humans, num_robots=0):
     start_the_clock()
+    num_robots = min(num_robots, 4-num_humans)
     # num_humans = num_players - num_robots
     num_players = num_humans + num_robots
-
-    num_robots = min(num_robots, 4-num_humans)
 
     # Create worms
     worms = []
@@ -772,7 +740,7 @@ def show_choice_screen(num_players=None, num_wormbots=None, skill=None):
             DISPLAYSURF.blit(surf_3, rect_3)
 
         # Number of wormbots section
-        surf_1 = choice_font.render('Number of Wormbots (B):', True, use_color_1)
+        surf_1 = choice_font.render('Number of Wormbots (W):', True, use_color_1)
         rect_1 = surf_1.get_rect()
         rect_1.midtop = (WINDOWWIDTH / 4, 0.55 * WINDOWHEIGHT)
         DISPLAYSURF.blit(surf_1, rect_1)
@@ -799,7 +767,7 @@ def show_choice_screen(num_players=None, num_wormbots=None, skill=None):
         if key:
             if key == K_p:
                 num_players = (num_players + 1) % len(PLAYER_STRINGS)
-            if key == K_b:
+            if key == K_w:
                 num_wormbots = (num_wormbots + 1) % len(WORMBOT_STRINGS)
             if key == K_s:
                 skill = (skill + 1) % len(SKILL_LEVELS)
@@ -811,8 +779,29 @@ def show_choice_screen(num_players=None, num_wormbots=None, skill=None):
                 num_players = 3
             elif key == K_4:
                 num_players = 4
+            elif key == K_0:
+                num_players = 0                
+            elif key == K_F1:
+                num_wormbots = 1
+            elif key == K_F2:
+                num_wormbots = 2
+            elif key == K_F3:
+                num_wormbots = 3
+            elif key == K_F4:
+                num_wormbots = 4
+            elif key == K_F10:
+                num_wormbots = 0
+            elif key == K_b:
+                skill = 0                
+            elif key == K_i:
+                skill = 1
+            elif key == K_a:
+                skill = 2
+            elif key == K_e:
+                skill = 3                  
             elif key == K_RETURN:
-                return num_players, num_wormbots, skill
+                if num_wormbots + num_players > 0:
+                    return num_players, num_wormbots, skill
 
         FPSCLOCK.tick(50)
 

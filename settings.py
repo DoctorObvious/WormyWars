@@ -119,4 +119,4 @@ THREE_STR = 'Three'
 FOUR_STR = 'Four'
 PLAYER_STRINGS = [ZERO_STR, ONE_STR, TWO_STR, THREE_STR, FOUR_STR]
 WORMBOT_STRINGS = [ZERO_STR, ONE_STR, TWO_STR, THREE_STR, FOUR_STR]
-SKILL_SPEEDS = [5,        8,            12,        16]
+SKILL_SPEEDS = [5,        8,            11,        16]
