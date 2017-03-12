@@ -135,7 +135,10 @@ class Worm:
             self.invisible_end_time = 0
             self.fade_start_time = -100.0
             self.is_shrinking = False
-            self._direction = RIGHT
+            if self.is_robot:
+                self._direction = LEFT
+            else:
+                self._direction = RIGHT
         else:
             self.coords = []
 

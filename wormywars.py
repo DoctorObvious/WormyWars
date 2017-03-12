@@ -43,8 +43,12 @@ def main():
         show_game_over_screen(winning_player, WORM_COLORS[winning_player[0] - 1])
         
 
-def get_safe_starting_coords(player_number, existing_coords=None):
-    start_x = 5
+def get_safe_starting_coords(player_number, is_wormbot, existing_coords=None):
+    if is_wormbot:
+        start_x = CELLWIDTH - 5
+    else:
+        start_x = 5
+
     worm_coords = []
     for y_try in range(4, 26):
         start_y = y_try + 7 * player_number
@@ -107,16 +111,20 @@ def run_game(num_humans, num_robots=0):
 
     # Create worms
     worms = []
-    for ii in range(num_players):
-        starting_coords = get_safe_starting_coords(player_number=ii, existing_coords=None)
-        if ii >= num_players - num_robots:
-            if ii % 2 == 0:
-                worms.append(WormBotLevel1(WORM_COLORS[ii], starting_coords, player_number=ii))
-            else:
-                worms.append(WormBotLevel2(WORM_COLORS[ii], starting_coords, player_number=ii))
+    worm_num = 0
+    for ii in range(num_humans):
+        starting_coords = get_safe_starting_coords(player_number=ii, is_wormbot=False, existing_coords=None)
+        worms.append(Worm(WORM_COLORS[worm_num], starting_coords, player_number=worm_num))
+        worm_num += 1
 
+    for ii in range(num_robots):
+        starting_coords = get_safe_starting_coords(player_number=ii, is_wormbot=True, existing_coords=None)
+        starting_coords.reverse()
+        if ii % 2 == 0:
+            worms.append(WormBotLevel1(WORM_COLORS[worm_num], starting_coords, player_number=worm_num))
         else:
-            worms.append(Worm(WORM_COLORS[ii], starting_coords, player_number=ii))
+            worms.append(WormBotLevel2(WORM_COLORS[worm_num], starting_coords, player_number=worm_num))
+        worm_num += 1
 
     sound_happy = pygame.mixer.Sound(SOUND_HAPPY)
     sound_happy.set_volume(0.5)
@@ -478,7 +486,7 @@ def run_game(num_humans, num_robots=0):
                 remove_worm_events(ii)
 
                 if worms[ii].is_in_play:
-                    starting_coords = get_safe_starting_coords(ii, existing_coords)
+                    starting_coords = get_safe_starting_coords(0, worms[ii].is_robot, existing_coords)
                     worms[ii].birth(starting_coords)
                     if worms[ii].num_lives == 0:
                         sound_die.play()

@@ -6,6 +6,6 @@
 
 - Levels: After eating 10 apples, start a new level with more blocks to avoid
 
-- Start screen with choices for players and wormbots.
+- Start screen with choices wormbots.
 
 - Clean up some timers, perhaps have a timer class
