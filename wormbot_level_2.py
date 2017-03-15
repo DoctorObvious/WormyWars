@@ -50,8 +50,7 @@ class WormBotLevel2(Worm):
                     goodness[jj] -= 90.0   # A hit is not a good choice.
 
             # check if the worm will hit a portal
-            all_portal_coords = make_coord_list(portal_coords)
-            for coord in all_portal_coords:
+            for coord in portal_coords:
                 if same_coord(coord, new_head):
                     found_hit = True
                     goodness[jj] -= 25.0   # A portal is an uncertain good choice.
