@@ -11,8 +11,12 @@ from pygame.locals import *
 from settings import *
 from utilities import *
 from worm_class import *
+import level_class as levels
+
 from wormbot_level_1 import WormBotLevel1
 from wormbot_level_2 import WormBotLevel2
+
+level = levels.level0
 
 
 def main():
@@ -66,43 +70,6 @@ def worm_starting_coords(start_x, start_y):
             {'x': start_x - 2, 'y': start_y}]
 
 
-def get_portal_coords():
-    # Do sides
-    left_portal_coords = [0] * PORTALS_PER_SIDE
-    left_portal_names = ['left'] * PORTALS_PER_SIDE
-    right_portal_coords = [0] * PORTALS_PER_SIDE
-    right_portal_names = ['right'] * PORTALS_PER_SIDE
-
-    portal_incr = int(CELLHEIGHT / (PORTALS_PER_SIDE + 1))
-    portal_offset = (PORTAL_LENGTH - 1) / 2
-    for hh in range(PORTALS_PER_SIDE):
-        left_portal_coords[hh] = [0] * PORTAL_LENGTH
-        right_portal_coords[hh] = [0] * PORTAL_LENGTH
-
-        for xx in range(PORTAL_LENGTH):
-            left_portal_coords[hh][xx] = {'x': LEFT_PORTAL_X, 'y': (hh + 1) * portal_incr - portal_offset + xx}
-            right_portal_coords[hh][xx] = {'x': RIGHT_PORTAL_X, 'y': (hh + 1) * portal_incr - portal_offset + xx}
-
-    up_portal_coords = [0] * PORTALS_PER_SIDE
-    up_portal_names = ['up'] * PORTALS_PER_SIDE
-    down_portal_coords = [0] * PORTALS_PER_SIDE
-    down_portal_names = ['down'] * PORTALS_PER_SIDE
-
-    portal_incr = int(CELLWIDTH / (PORTALS_PER_SIDE + 1))
-    portal_offset = (PORTAL_LENGTH - 1) / 2
-    for hh in range(PORTALS_PER_SIDE):
-        up_portal_coords[hh] = [0] * PORTAL_LENGTH
-        down_portal_coords[hh] = [0] * PORTAL_LENGTH
-
-        for xx in range(PORTAL_LENGTH):
-            up_portal_coords[hh][xx] = {'y': UP_PORTAL_Y, 'x': (hh + 1) * portal_incr - portal_offset + xx}
-            down_portal_coords[hh][xx] = {'y': DOWN_PORTAL_Y, 'x': (hh + 1) * portal_incr - portal_offset + xx}
-
-    portal_coords = left_portal_coords + right_portal_coords + up_portal_coords + down_portal_coords
-    portal_names = left_portal_names + right_portal_names + up_portal_names + down_portal_names
-    return portal_coords, portal_names
-
-
 def run_game(num_humans, num_robots=0):
     start_the_clock()
     num_robots = min(num_robots, 4-num_humans)
@@ -139,9 +106,8 @@ def run_game(num_humans, num_robots=0):
     switcheroo_start_time = 0.0
 
     # Get the portal coordinates
-    portal_coords, portal_names = get_portal_coords()
-
-    existing_coords = make_coord_list(portal_coords) + collect_worms_coords(worms)
+    portal_coords = levels.level0.get_all_portal_coords()
+    existing_coords = portal_coords + collect_worms_coords(worms)
 
     # Start the apple in a random place.    
     apple = get_safe_fruit_location(existing_coords)
@@ -275,45 +241,24 @@ def run_game(num_humans, num_robots=0):
 
                         # check if the worm has hit a portal
                         hit_portal = False
-                        for portal_coord in portal_coords:
-                            for coord in portal_coord:
-                                if same_coord(worm_coords[HEAD], coord):
-                                    sound_portal.play()
-                                    hit_portal = True
+                        hit_portal_point = None
+                        # for portal_coord in portal_coords:
+                        for portal_point in level.portals:
+                            if same_coord(worm_coords[HEAD], portal_point.coord):
+                                sound_portal.play()
+                                hit_portal = True
+                                hit_portal_point = portal_point
 
                         # teleport logic:  Should update to use x AND y checks and/or use the portal "name".
                         if hit_portal:
-                            if worm_coords[HEAD]['x'] == LEFT_PORTAL_X:
-                                if direction == UP or direction == DOWN:
-                                    worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
-                                elif direction == LEFT:
-                                    worm_coords[HEAD]['x'] = RIGHT_PORTAL_X - 1
-                                else:
-                                    worm_coords[HEAD]['x'] = RIGHT_PORTAL_X + 1
-
-                            elif worm_coords[HEAD]['x'] == RIGHT_PORTAL_X:
-                                if direction == UP or direction == DOWN:
-                                    worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
-                                elif direction == LEFT:
-                                    worm_coords[HEAD]['x'] = LEFT_PORTAL_X - 1
-                                else:
-                                    worm_coords[HEAD]['x'] = LEFT_PORTAL_X + 1
-
-                            elif worm_coords[HEAD]['y'] == UP_PORTAL_Y:
-                                if direction == LEFT or direction == RIGHT:
-                                    worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
-                                elif direction == DOWN:
-                                    worm_coords[HEAD]['y'] = DOWN_PORTAL_Y + 1
-                                else:
-                                    worm_coords[HEAD]['y'] = DOWN_PORTAL_Y - 1
-
-                            elif worm_coords[HEAD]['y'] == DOWN_PORTAL_Y:
-                                if direction == LEFT or direction == RIGHT:
-                                    worm_coords[HEAD] = move_worm_same_side_portal(worm_coords[HEAD], portal_coords)
-                                elif direction == DOWN:
-                                    worm_coords[HEAD]['y'] = UP_PORTAL_Y + 1
-                                else:
-                                    worm_coords[HEAD]['y'] = UP_PORTAL_Y - 1
+                            action = hit_portal_point.get_action(direction)
+                            if action is None:
+                                worms[ii].die()
+                            else:
+                                worm_coords[HEAD]['x'] = action.new_coord['x']
+                                worm_coords[HEAD]['y'] = action.new_coord['y']
+                                direction = action.new_direction
+                                # worms[ii].set_direction(direction)
 
                         # check if the worm has hit its body
                         for worm_body in worm_coords[1:]:
@@ -340,7 +285,7 @@ def run_game(num_humans, num_robots=0):
                                         worms[jj].die()  # The other worm dies
                                 kk += 1
 
-                        existing_coords = make_coord_list(portal_coords) + collect_worms_coords(worms)
+                        existing_coords = portal_coords + collect_worms_coords(worms)
 
                         # check if worm has eaten an apple
                         if same_coord(worm_coords[HEAD], apple):
@@ -463,7 +408,7 @@ def run_game(num_humans, num_robots=0):
             # Make a banana!
             banana = get_safe_fruit_location(existing_coords)
 
-        existing_coords = make_coord_list(portal_coords) + collect_worms_coords(worms)
+        existing_coords = portal_coords + collect_worms_coords(worms)
 
         # ----------------  Draw everything! ---------------------------
         for ii in range(num_players):
@@ -494,7 +439,7 @@ def run_game(num_humans, num_robots=0):
                     worms[ii].draw(DISPLAYSURF)
 
         # Update coordinates where things are
-        existing_coords = make_coord_list(portal_coords) + collect_worms_coords(worms)
+        existing_coords = portal_coords + collect_worms_coords(worms)
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
@@ -510,48 +455,6 @@ def run_game(num_humans, num_robots=0):
                     winning_player.append(ii + 1)
 
             return winning_player  # game over
-
-
-def move_worm_same_side_portal(worm_head, portal_coords):
-    # Find which portal we're in
-    for portal in portal_coords:
-        if worm_head in portal:
-            found_portal = portal
-
-    # Is it a vertical or horizontal portal?
-    if found_portal[0]['x'] == found_portal[1]['x']:
-        use_key = 'x'
-        other_key = 'y'
-    else:
-        use_key = 'y'
-        other_key = 'x'
-
-    # Are we going in the min or max end?
-    min_of_found = find_min_coord(found_portal, other_key)
-    if worm_head[other_key] == min_of_found:
-        entered_min = True
-    else:
-        entered_min = False
-
-    # Find the other one on the same side
-    other_portal = []
-    for portal in portal_coords:
-        if portal[0][use_key] == found_portal[0][use_key] and portal[0][other_key] != found_portal[0][other_key]:
-            other_portal = portal
-
-    # Figure out the correct end of the portal to exit
-    if entered_min:
-        use_val = find_max_coord(other_portal, other_key)
-        use_val += 1  # Go beyond end of portal
-    else:
-        use_val = find_min_coord(other_portal, other_key)
-        use_val -= 1  # Go beyond end of portal
-
-    new_head = dict()
-    new_head[use_key] = found_portal[0][use_key]
-    new_head[other_key] = use_val
-
-    return new_head
 
 
 def find_min_coord(coords, key):
@@ -923,12 +826,8 @@ def draw_lives(player_number, lives, worm_color):
 
 
 def draw_portals(portal_coords):
-    use_color = get_pulse_color([PURPLE, GREEN], 2.0)
-    for portal in portal_coords:
-        draw_portal(portal, use_color)
+    portal_color = get_pulse_color([PURPLE, GREEN], 2.0)
 
-
-def draw_portal(portal_coords, portal_color):
     for coord in portal_coords:
         x = coord['x'] * CELLSIZE
         y = coord['y'] * CELLSIZE
