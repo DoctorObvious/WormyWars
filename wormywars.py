@@ -157,7 +157,7 @@ def run_game(num_humans, num_robots=0):
             fruits = [banana, grape, lime, blueberry, golden_apple]
             for ii in range(num_players):
                 if worms[ii].is_robot and worms[ii].is_in_play:
-                    worms[ii].choose_direction(visible_worms_info, portal_coords, apple, fruits)
+                    worms[ii].choose_direction(visible_worms_info, portal_coords, wall_coords, apple, fruits)
 
             for event in pygame.event.get():  # event handling loop
 

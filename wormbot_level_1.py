@@ -9,7 +9,7 @@ class WormBotLevel1(Worm):
 
     is_robot = True
 
-    def choose_direction(self, visible_worms_info, portal_coords, apple, fruits):
+    def choose_direction(self, visible_worms_info, portal_coords, wall_coords, apple, fruits):
 
         # Give points to the best directions [LEFT, RIGHT, UP, DOWN]
         # Add a little randomness
@@ -51,8 +51,15 @@ class WormBotLevel1(Worm):
                 if new_head['x'] == -1 or new_head['x'] == CELLWIDTH \
                         or new_head['y'] == -1 or new_head['y'] == CELLHEIGHT:
                     found_hit = True
-                    goodness[jj] -= 90   # A hit is not a good choice.
+                    goodness[jj] -= 90.0   # A hit is not a good choice.
 
+            # check if the worm will hit the wall
+            if not found_hit:
+                for coord in wall_coords:
+                    if same_coord(coord, new_head):
+                        found_hit = True
+                        goodness[jj] -= 90.0
+                        
             # check if the worm is going to hit where it looks like the other worm is going
             if not found_hit:
                 for worm_info in visible_worms_info:
