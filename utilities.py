@@ -44,6 +44,21 @@ def make_coord_list(coords):
     return coord_list
 
 
+def get_wall_coords(walls):
+    all_wall_coords = []
+    for item in walls:
+        if type(item['x']) == list:
+            for x in item['x']:
+                all_wall_coords += [{'x': x, 'y': item['y']}]
+        elif type(item['y']) == list:
+            for y in item['y']:
+                all_wall_coords += [{'x': item['x'], 'y': y}]
+        else:
+            all_wall_coords += [item]
+
+    return all_wall_coords
+    
+
 def same_coord(coord1, coord2):
     return coord1['x'] == coord2['x'] and coord1['y'] == coord2['y']
 

@@ -107,7 +107,8 @@ def run_game(num_humans, num_robots=0):
 
     # Get the portal coordinates
     portal_coords = levels.level0.get_all_portal_coords()
-    existing_coords = portal_coords + collect_worms_coords(worms)
+    wall_coords = get_wall_coords(levels.level0.walls)
+    existing_coords = portal_coords + wall_coords + collect_worms_coords(worms)
 
     # Start the apple in a random place.    
     apple = get_safe_fruit_location(existing_coords)
@@ -249,6 +250,11 @@ def run_game(num_humans, num_robots=0):
                                 hit_portal = True
                                 hit_portal_point = portal_point
 
+                        # check if the worm has hit a wall
+                        for wall_point in wall_coords:
+                            if same_coord(worm_coords[HEAD], wall_point):
+                                worms[ii].die()
+
                         # teleport logic:  Should update to use x AND y checks and/or use the portal "name".
                         if hit_portal:
                             action = hit_portal_point.get_action(direction)
@@ -285,7 +291,7 @@ def run_game(num_humans, num_robots=0):
                                         worms[jj].die()  # The other worm dies
                                 kk += 1
 
-                        existing_coords = portal_coords + collect_worms_coords(worms)
+                        existing_coords = portal_coords + wall_coords + collect_worms_coords(worms)
 
                         # check if worm has eaten an apple
                         if same_coord(worm_coords[HEAD], apple):
@@ -408,7 +414,7 @@ def run_game(num_humans, num_robots=0):
             # Make a banana!
             banana = get_safe_fruit_location(existing_coords)
 
-        existing_coords = portal_coords + collect_worms_coords(worms)
+        existing_coords = portal_coords + wall_coords + collect_worms_coords(worms)
 
         # ----------------  Draw everything! ---------------------------
         for ii in range(num_players):
@@ -418,6 +424,7 @@ def run_game(num_humans, num_robots=0):
             worms[ii].draw(DISPLAYSURF)
 
         draw_portals(portal_coords)
+        draw_walls(wall_coords)
 
         draw_fruit(apple, RED, is_bad=apple_is_bad)
         draw_fruit(golden_apple, GOLD, is_shiny=True)
@@ -439,7 +446,7 @@ def run_game(num_humans, num_robots=0):
                     worms[ii].draw(DISPLAYSURF)
 
         # Update coordinates where things are
-        existing_coords = portal_coords + collect_worms_coords(worms)
+        existing_coords = portal_coords + wall_coords + collect_worms_coords(worms)
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
@@ -835,6 +842,16 @@ def draw_portals(portal_coords):
         pygame.draw.rect(DISPLAYSURF, portal_color, portal_segment_rect)
 
 
+def draw_walls(wall_coords):
+    wall_color = WALL_COLOR
+
+    for coord in wall_coords:
+        x = coord['x'] * CELLSIZE
+        y = coord['y'] * CELLSIZE
+        segment_rect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+        pygame.draw.rect(DISPLAYSURF, wall_color, segment_rect)
+
+        
 def draw_fruit(coord, fruit_color=RED, is_shiny=False, is_bad=False):
     if len(coord) == 0:
         return

@@ -46,11 +46,12 @@ class PortalPoint:
 #                  right_action=Action({'x': 678, 'y':34}, DOWN))
 
 class Level:
-    def __init__(self, number, name, portals, walls):
+    def __init__(self, number, name, portals, walls, num_apples):
         self.portals = portals
         self.walls = walls
         self.number = number
         self.name = name
+        self.num_apples = num_apples
 
     def get_all_portal_coords(self):
         all_portals_coords = []
@@ -60,6 +61,9 @@ class Level:
 
         return all_portals_coords
 
+#
+# Define information for level 1
+#
 
 portals0 = [
     # Left Side, Top
@@ -167,4 +171,9 @@ portals0 = [
                 left_action=Action({'x': 13, 'y': 32}, LEFT)),
 ]
 
-level0 = Level(0, "Here We Go!", portals0, [])
+walls0 = [
+    {'x': range(16, 30), 'y': CELLHEIGHT/2 + 2},
+    {'x': range(16, 30), 'y': CELLHEIGHT/2 - 2},
+    ]
+
+level0 = Level(0, "Here We Go!", portals0, walls0, 10)
