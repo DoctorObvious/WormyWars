@@ -8,10 +8,12 @@ import random
 import pygame
 import sys
 from pygame.locals import *
+
 from settings import *
 from utilities import *
 from worm_class import *
-import level_class as lev
+# import level_class as lev
+import level_data
 
 from wormbot_level_1 import WormBotLevel1
 from wormbot_level_2 import WormBotLevel2
@@ -101,7 +103,7 @@ def run_game(num_humans, num_robots=0):
     # Per level
     level_counter = 0
     while True:
-        level = lev.all_levels[level_counter]
+        level = level_data.all_levels[level_counter]
         # Reset items for each level
         start_the_clock()
 
@@ -479,7 +481,7 @@ def run_game(num_humans, num_robots=0):
                 return winning_player  # game over
 
         level_counter += 1
-        if level_counter >= len(lev.all_levels):
+        if level_counter >= len(level_data.all_levels):
             level_counter = 0
 
 
