@@ -6,6 +6,7 @@ FPS = 8
 GROW_BY = 4                     # may be co-opted in the code and worms may grow by other rules.
 DOUBLE_CLICK_TIME = 0.3         # in seconds
 DYING_TIME_IN_SECS = 1.0        # in seconds
+LEVEL_START_TIME = 2.0          # in seconds
 
 GRAPE_APPEAR_TIME = 20.         # in seconds
 GRAPE_POINTS = 17

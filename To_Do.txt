@@ -5,6 +5,7 @@
 - Safe Spawn: Make a square that other worms can't enter as you fade in for 2 seconds
 
 - Levels: After eating 10 apples, start a new level with more blocks to avoid
+  - Add a level splash screen
 
 - Start screen with choices wormbots.
 

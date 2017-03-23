@@ -65,7 +65,7 @@ class Level:
 # Define information for level 1
 #
 
-portals0 = [
+portals2 = [
     # Left Side, Top
     PortalPoint({'x': 2, 'y': 10},
                 left_action=Action({'x': 41, 'y': 10}, LEFT),
@@ -171,9 +171,19 @@ portals0 = [
                 left_action=Action({'x': 13, 'y': 32}, LEFT)),
 ]
 
-walls0 = [
+walls1 = [
     {'x': range(16, 30), 'y': CELLHEIGHT/2 + 2},
     {'x': range(16, 30), 'y': CELLHEIGHT/2 - 2},
     ]
 
-level0 = Level(0, "Here We Go!", portals0, walls0, 10)
+walls3 = [
+    {'x': range(16, 30), 'y': CELLHEIGHT / 2},
+    {'x': CELLWIDTH / 2, 'y': range(16, 30) },
+]
+
+level0 = Level(0, "Here We Go!", [], [], 1)
+level1 = Level(0, "Walls!", [], walls1, 3)
+level2 = Level(0, "Portals!", portals2, [], 5)
+level3 = Level(0, "Trickier!", portals2, walls3, 10)
+
+all_levels = [level0, level1, level2, level3]
