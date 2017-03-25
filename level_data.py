@@ -118,10 +118,34 @@ walls3 = [
     {'x': range(16, 30), 'y': CELLHEIGHT / 2},
     {'x': CELLWIDTH / 2, 'y': range(16, 30) },
 ]
+walls4 = [
+    {'x': range(1, CELLWIDTH - 1), 'y': CELLHEIGHT / 2},
+    {'x': CELLWIDTH / 2, 'y': range(1, CELLHEIGHT - 1)},
+]
+walls5 = [
+    {'x': range(0, CELLWIDTH), 'y': CELLHEIGHT / 2},
+    {'x': CELLWIDTH / 2, 'y': range(0, CELLHEIGHT)},
+]
+walls6 = [
+    {'x': range(0, CELLWIDTH), 'y': CELLHEIGHT / 2},
+    {'x': CELLWIDTH / 2, 'y': range(0, CELLHEIGHT)},
+    {'x': range(0, CELLWIDTH / 4), 'y': CELLHEIGHT / 5},
+    {'x': range(CELLWIDTH / 4 + 1, CELLWIDTH / 2), 'y': CELLHEIGHT / 5},
+    {'x': range(CELLWIDTH / 2, CELLWIDTH / 2 + 11), 'y': CELLHEIGHT / 5},
+    {'x': range(CELLWIDTH / 2 + 12, CELLWIDTH), 'y': CELLHEIGHT / 5},
+    {'x': range(0, CELLWIDTH / 4), 'y': CELLHEIGHT / 5 + 19},
+    {'x': range(CELLWIDTH / 4 + 1, CELLWIDTH / 2), 'y': CELLHEIGHT / 5 + 19},
+    {'x': range(CELLWIDTH / 2 + 1, CELLWIDTH - 12), 'y': CELLHEIGHT / 5 + 19},
+    {'x': range(CELLWIDTH - 11, CELLWIDTH), 'y': CELLHEIGHT / 5 + 19},
+        
+]
 
 level0 = Level(0, "Here We Go!", [], [], 1)
 level1 = Level(0, "Walls!", [], walls1, 3)
 level2 = Level(0, "Portals!", portals2, [], 5)
 level3 = Level(0, "Trickier!", portals2, walls3, 10)
+level4 = Level(0, "Can You Survive?!", portals2, walls4, 13)
+level5 = Level(0, "Only Portals!", portals2, walls5, 17)
+level6 = Level(0, "Pure Skill!", portals2, walls6, 17)
 
-all_levels = [level0, level1, level2, level3]
+all_levels = [level0, level1, level2, level3, level4, level5, level6]
