@@ -121,6 +121,8 @@ def run_game(num_humans, num_robots=0):
             starting_coords = get_safe_starting_coords(worms[ii].player_number, worms[ii].is_robot, existing_coords)
             worms[ii].new_level(starting_coords)
 
+        pygame.event.get()  # clear out event queue
+
         # Start the apple in a random place.
         apple = get_safe_fruit_location(existing_coords)
         apple_is_bad = False
