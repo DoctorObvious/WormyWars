@@ -152,6 +152,7 @@ def run_game(num_humans, num_robots=0):
         pause_end_time = current_time() + LEVEL_START_TIME
         pause_message = 'Level {}: {}'.format(level_counter+1, level.name)
 
+        end_level = False
         while apple_number <= level.num_apples:  # main game loop
             frame_count += 1.0
 
@@ -311,7 +312,6 @@ def run_game(num_humans, num_robots=0):
 
                             # check if worm has eaten an apple
                             if same_coord(worm_coords[HEAD], apple):
-                                apple = get_safe_fruit_location(existing_coords)  # set a new apple somewhere
                                 apple_time = current_time()
                                 sound_happy.play()
                                 worms[ii].add_score(apple_number)
@@ -322,6 +322,10 @@ def run_game(num_humans, num_robots=0):
                                     worms[ii].add_turbo()
 
                                 apple_number += 1
+                                if apple_number > level.num_apples:
+                                    end_level = True
+                                else:
+                                    apple = get_safe_fruit_location(existing_coords)  # set a new apple somewhere
 
                             if len(golden_apple) > 0:
                                 # check if a worm has eaten a golden_apple
@@ -434,6 +438,8 @@ def run_game(num_humans, num_robots=0):
             existing_coords = portal_coords + wall_coords + collect_worms_coords(worms)
 
             # ----------------  Draw everything! ---------------------------
+            draw_fruit(apple, RED, is_bad=apple_is_bad)
+
             for ii in range(num_players):
                 draw_score(ii, worms[ii].score, worms[ii].color)
                 draw_turbos(ii, worms[ii].num_turbos, worms[ii].color)
@@ -443,9 +449,8 @@ def run_game(num_humans, num_robots=0):
             draw_portals(portal_coords)
             draw_walls(wall_coords)
             if current_time() < pause_end_time:
-                draw_pause_message(pause_message)
+                draw_pause_message(pause_message, color=BLUE, pulse_time=LEVEL_START_TIME*4)
 
-            draw_fruit(apple, RED, is_bad=apple_is_bad)
             draw_fruit(golden_apple, GOLD, is_shiny=True)
             draw_fruit(grape, PURPLE)
             draw_fruit(banana, YELLOW)
@@ -468,6 +473,7 @@ def run_game(num_humans, num_robots=0):
             existing_coords = portal_coords + wall_coords + collect_worms_coords(worms)
 
             pygame.display.update()
+
             FPSCLOCK.tick(FPS)
             # sound_beep.play()
 
@@ -482,6 +488,10 @@ def run_game(num_humans, num_robots=0):
 
                 return winning_player  # game over
 
+            if end_level:
+                time.sleep(1)
+
+        # Done with level, so...
         level_counter += 1
         if level_counter >= len(level_data.all_levels):
             level_counter = 0
@@ -651,13 +661,13 @@ def show_choice_screen(num_players=None, num_wormbots=None, skill=None):
         DISPLAYSURF.blit(surf_1, rect_1)
 
         for ii in range(len(SKILL_LEVELS)):
-            level_str = SKILL_LEVELS[ii]
+            skill_str = SKILL_LEVELS[ii]
 
             if skill == ii:
                 use_color = use_color_1
             else:
                 use_color = use_color_2
-            surf_2 = choice_font.render(level_str, True, use_color)
+            surf_2 = choice_font.render(skill_str, True, use_color)
             rect_2 = surf_2.get_rect()
             rect_2.midtop = (3 * WINDOWWIDTH / 4, 0.3 * WINDOWHEIGHT + ii * 30)
             DISPLAYSURF.blit(surf_2, rect_2)
@@ -746,45 +756,6 @@ def show_choice_screen(num_players=None, num_wormbots=None, skill=None):
 
         FPSCLOCK.tick(50)
 
-
-# def show_skill_screen():
-#     level_font = pygame.font.Font('freesansbold.ttf', 50)
-#     pygame.event.get()  # clear out event queue
-#
-#     while True:
-#         DISPLAYSURF.fill(BGCOLOR)
-#
-#         use_color_1 = get_pulse_color([GREEN, PURPLE, RED, BLUE], pulse_time=3.0)
-#         surf_1 = level_font.render('Choose skill:', True, use_color_1)
-#         rect_1 = surf_1.get_rect()
-#         rect_1.midtop = (WINDOWWIDTH / 2, WINDOWHEIGHT / 4)
-#         DISPLAYSURF.blit(surf_1, rect_1)
-#
-#         use_color_2 = get_pulse_color([BLUE, BLACK, PURPLE, BLACK], pulse_time=3.0)
-#         for ii in range(len(SKILL_LEVELS)):
-#             level_str = SKILL_LEVELS[ii]
-#             level_num = ii + 1
-#
-#             surf_2 = level_font.render(level_str + ': Press ' + str(level_num), True, use_color_2)
-#             rect_2 = surf_2.get_rect()
-#             rect_2.midtop = (WINDOWWIDTH / 2, 0.4 * WINDOWHEIGHT + ii*60)
-#             DISPLAYSURF.blit(surf_2, rect_2)
-#
-#         pygame.display.update()
-#
-#         key = check_for_key_press()
-#         if key:
-#             if key == K_1:
-#                 return 0
-#             elif key == K_2:
-#                 return 1
-#             elif key == K_3:
-#                 return 2
-#             elif key == K_4:
-#                 return 3
-#
-#         FPSCLOCK.tick(FPS)
-        
     
 def terminate():
     pygame.quit()
@@ -834,10 +805,12 @@ def show_game_over_screen(winning_players, player_color):
         pygame.time.wait(100)
 
 
-def draw_pause_message(message, color=BLUE):
+def draw_pause_message(message, color=BLUE, pulse_time=8.0):
+    use_color = get_pulse_color([color, BLACK], pulse_time=pulse_time)
+
     if message is not None:
         font = pygame.font.Font('freesansbold.ttf', 50)
-        surf = font.render(message, True, color)
+        surf = font.render(message, True, use_color)
         rect = surf.get_rect()
         rect.midtop = (WINDOWWIDTH / 2, WINDOWHEIGHT / 4)
         DISPLAYSURF.blit(surf, rect)
