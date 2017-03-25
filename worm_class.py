@@ -95,10 +95,6 @@ class Worm:
         self.player_number = player_number
         self.num_lives = NUM_LIVES + 1
         self.score = 0
-        self.last_shrink_time = -100
-        self.last_press_time = -100
-        self.last_key_press = None
-
         self.birth([])   # Don't need coords here, wait for new_level call
 
     def get_worm_info(self):
@@ -127,10 +123,6 @@ class Worm:
 
             self.reset()
 
-            if self.is_robot:
-                self._direction = LEFT
-            else:
-                self._direction = RIGHT
         else:
             self.coords = []
 
@@ -159,6 +151,14 @@ class Worm:
         self.freeze_end_time = 0
         self.invisible_end_time = 0
         self.fade_start_time = -100.0
+        self.last_shrink_time = -100
+        self.last_press_time = -100
+        self.last_key_press = None
+
+        if self.is_robot:
+            self._direction = LEFT
+        else:
+            self._direction = RIGHT
 
     def die(self):
         self.reset()
