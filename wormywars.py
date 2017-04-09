@@ -268,9 +268,10 @@ def run_game(num_humans, num_robots=0):
                                     hit_portal_point = portal_point
 
                             # check if the worm has hit a wall
-                            for wall_point in wall_coords:
-                                if same_coord(worm_coords[HEAD], wall_point):
-                                    worms[ii].die()
+                            if not hit_portal:
+                                for wall_point in wall_coords:
+                                    if same_coord(worm_coords[HEAD], wall_point):
+                                        worms[ii].die()
 
                             # teleport logic:  Should update to use x AND y checks and/or use the portal "name".
                             if hit_portal:
@@ -446,8 +447,8 @@ def run_game(num_humans, num_robots=0):
                 draw_lives(ii, worms[ii].num_lives, worms[ii].color)
                 worms[ii].draw(DISPLAYSURF)
 
-            draw_portals(portal_coords)
             draw_walls(wall_coords)
+            draw_portals(portal_coords)
             if current_time() < pause_end_time:
                 draw_pause_message(pause_message, color=BLUE, pulse_time=LEVEL_START_TIME*4)
 
