@@ -122,11 +122,11 @@ walls4 = [
     {'x': range(1, CELLWIDTH - 1), 'y': CELLHEIGHT / 2},
     {'x': CELLWIDTH / 2, 'y': range(1, CELLHEIGHT - 1)},
 ]
-walls5 = [
+walls6 = [
     {'x': range(0, CELLWIDTH), 'y': CELLHEIGHT / 2},
     {'x': CELLWIDTH / 2, 'y': range(0, CELLHEIGHT)},
 ]
-walls6 = [
+walls5 = [
     {'x': range(0, CELLWIDTH), 'y': CELLHEIGHT / 2},
     {'x': CELLWIDTH / 2, 'y': range(0, CELLHEIGHT)},
     {'x': range(0, CELLWIDTH / 4), 'y': CELLHEIGHT / 5},
@@ -143,9 +143,9 @@ walls6 = [
 level0 = Level(0, "Here We Go!", [], [], 1)
 level1 = Level(0, "Walls!", [], walls1, 3)
 level2 = Level(0, "Portals!", portals2, [], 5)
-level3 = Level(0, "Trickier!", portals2, walls3, 10)
-level4 = Level(0, "Can You Survive?!", portals2, walls4, 13)
-level5 = Level(0, "Only Portals!", portals2, walls5, 17)
-level6 = Level(0, "Pure Skill!", portals2, walls6, 17)
+level3 = Level(0, "Trickier!", portals2, walls3, 1)
+level4 = Level(0, "Can You Survive?!", portals2, walls4, 10)
+level5 = Level(0, "Pure Skill!", portals2, walls5, 10)
+level6 = Level(0, "Only Portals!", portals2, walls6, 10)
 
 all_levels = [level0, level1, level2, level3, level4, level5, level6]
