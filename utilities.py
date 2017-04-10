@@ -81,6 +81,12 @@ def closest_fruit(source, fruits):
     return fruits[min_index], distances[min_index]
 
 
+def closest_portal(source, portal_coords):
+    distances = [total_distance_to_target(source, coord) for coord in portal_coords]
+    min_index = distances.index(min(distances))
+    return portal_coords[min_index], distances[min_index]
+
+
 def get_existing_fruit_coords(fruits):
     fruit_coords = []
     for fruit in fruits:

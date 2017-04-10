@@ -21,7 +21,7 @@ class WormBotLevel1(Worm):
         goodness[DIRECTIONS.index(self._direction)] += 4.0
 
         # Prefer the routes to the apple
-        goodness = prefer_direction_to_fruit(self.coords, apple, goodness)
+        goodness = prefer_direction_to_target(self.coords, apple, goodness)
 
         # Can't go the opposite of the current direction
         # print "Current direction: {}".format(current_direction)
@@ -41,10 +41,9 @@ class WormBotLevel1(Worm):
                     goodness[jj] -= 90.0   # A hit is not a good choice.
 
             # check if the worm will hit a portal
-            for coord in portal_coords:
-                if same_coord(coord, new_head):
-                    found_hit = True
-                    goodness[jj] -= 25.0   # A portal is an uncertain good choice.
+            if new_head in portal_coords:
+                found_hit = True
+                goodness[jj] -= 25.0   # A portal is an uncertain good choice.
 
             # check if the worm will hit the edge
             if not found_hit:
@@ -55,10 +54,9 @@ class WormBotLevel1(Worm):
 
             # check if the worm will hit the wall
             if not found_hit:
-                for coord in wall_coords:
-                    if same_coord(coord, new_head):
-                        found_hit = True
-                        goodness[jj] -= 90.0
+                if new_head in wall_coords:
+                    found_hit = True
+                    goodness[jj] -= 90.0
                         
             # check if the worm is going to hit where it looks like the other worm is going
             if not found_hit:

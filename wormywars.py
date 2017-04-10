@@ -104,6 +104,7 @@ def run_game(num_humans, num_robots=0):
     level_counter = 0
     while True:
         level = level_data.all_levels[level_counter]
+
         # Reset items for each level
         start_the_clock()
 
@@ -114,6 +115,10 @@ def run_game(num_humans, num_robots=0):
         # Get the portal coordinates
         portal_coords = level.get_all_portal_coords()
         wall_coords = get_wall_coords(level.walls)
+
+        # Since portals can be on top of walls, remove walls under portals
+        wall_coords = [x for x in wall_coords if x not in portal_coords]
+
         existing_coords = portal_coords + wall_coords + collect_worms_coords(worms)
 
         # Prepare worms for new level
@@ -275,6 +280,7 @@ def run_game(num_humans, num_robots=0):
 
                             # teleport logic:  Should update to use x AND y checks and/or use the portal "name".
                             if hit_portal:
+                                worms[ii].hit_portal()  # Let the worm know it hit a portal
                                 action = hit_portal_point.get_action(direction)
                                 if action is None:
                                     worms[ii].die()

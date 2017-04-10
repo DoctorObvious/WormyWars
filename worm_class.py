@@ -83,6 +83,10 @@ class Worm:
     started_dying_time = []
     last_shrink_time = []
     last_press_time = []
+    last_portal_time = []
+    last_grow_time = []
+    last_point_time = []
+
     last_key_press = []
 
     is_dying = []
@@ -153,6 +157,9 @@ class Worm:
         self.fade_start_time = -100.0
         self.last_shrink_time = -100
         self.last_press_time = -100
+        self.last_portal_time = -100
+        self.last_grow_time = current_time()
+        self.last_point_time = current_time()
         self.last_key_press = None
 
         if self.is_robot:
@@ -218,6 +225,7 @@ class Worm:
 
     def add_score(self, new_score):
         self.score += new_score
+        self.last_point_time = current_time()
     
     def draw(self, display_surface):
         if self.is_in_play:
@@ -337,6 +345,7 @@ class Worm:
     def grow(self, num_to_grow):
         self.is_shrinking = False
         self.num_to_grow += num_to_grow
+        self.last_grow_time = current_time()
 
     def shrink(self):
         self.num_to_grow = 0
@@ -370,9 +379,12 @@ class Worm:
     def switcheroo(self):
         pass   # TODO:!
 
+    def hit_portal(self):
+        self.last_portal_time = current_time()
 
-def prefer_direction_to_fruit(worm_coords, fruit, goodness, scale=1.0):
-    x_dist, y_dist = utils.xy_distance_to_target(worm_coords[HEAD], fruit)
+
+def prefer_direction_to_target(worm_coords, target, goodness, scale=1.0):
+    x_dist, y_dist = utils.xy_distance_to_target(worm_coords[HEAD], target)
     preferred_x_ix = None
     preferred_y_ix = None
     if x_dist > 0:

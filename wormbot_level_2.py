@@ -1,6 +1,7 @@
 from worm_class import *
 from settings import *
 from utilities import *
+from game_clock import *
 import random
 
 
@@ -20,17 +21,26 @@ class WormBotLevel2(Worm):
         # Give a very slight preference to the current direction, all else being equal
         goodness[DIRECTIONS.index(self._direction)] += 4.0
 
-        # Find the closest fruit.
-        apple_distance = total_distance_to_target(self.coords[HEAD], apple)
-        fruit_coords = get_existing_fruit_coords(fruits)
-        fruit_target = apple
-        if len(fruit_coords) > 0:
-            close_fruit, fruit_distance = closest_fruit(self.coords[HEAD], fruit_coords)
+        portal_goodness = -25.0
 
-            if fruit_distance < (apple_distance - 4):   # Prefer the apple a bit
-                fruit_target = close_fruit
+        # Some times a complicated level will trap a worm. May need to stop trying for a fruit and head to a portal
+        if len(portal_coords) > 1 and (10.0 < elapsed_time(self.last_point_time) < elapsed_time(self.last_portal_time)):
+            target, target_distance = closest_portal(self.coords[HEAD], portal_coords)
+            portal_goodness = 5.
+        else:
+            # Find the closest fruit.
+            apple_distance = total_distance_to_target(self.coords[HEAD], apple)
+            fruit_coords = get_existing_fruit_coords(fruits)
+            target = apple
+            target_distance = apple_distance
+            if len(fruit_coords) > 0:
+                close_fruit, fruit_distance = closest_fruit(self.coords[HEAD], fruit_coords)
 
-        goodness = prefer_direction_to_fruit(self.coords, fruit_target, goodness, 1.0)
+                if fruit_distance < (apple_distance - 4):   # Prefer the apple a bit
+                    target = close_fruit
+                    target_distance = fruit_distance
+
+        goodness = prefer_direction_to_target(self.coords, target, goodness, 1.0)
 
         # Can't go the opposite of the current direction
         # print "Current direction: {}".format(current_direction)
@@ -50,10 +60,14 @@ class WormBotLevel2(Worm):
                     goodness[jj] -= 90.0   # A hit is not a good choice.
 
             # check if the worm will hit a portal
-            for coord in portal_coords:
-                if same_coord(coord, new_head):
-                    found_hit = True
-                    goodness[jj] -= 25.0   # A portal is an uncertain good choice.
+            if new_head in portal_coords:
+                found_hit = True
+
+                # A portal is an uncertain good choice.
+                if target_distance > 10.:
+                    goodness[jj] -= 0.0
+                else:
+                    goodness[jj] += portal_goodness
 
             # check if the worm will hit the edge
             if not found_hit:
@@ -64,10 +78,9 @@ class WormBotLevel2(Worm):
 
             # check if the worm will hit the wall
             if not found_hit:
-                for coord in wall_coords:
-                    if same_coord(coord, new_head):
-                        found_hit = True
-                        goodness[jj] -= 90.0
+                if new_head in wall_coords:
+                    found_hit = True
+                    goodness[jj] -= 90.0
                         
             # check if the worm is going to hit where it looks like the other worm is going
             if not found_hit:
