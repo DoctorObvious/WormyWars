@@ -150,8 +150,10 @@ portals3 = [
 ]
 
 walls4 = [
-    {'x': range(1, CELLWIDTH - 1), 'y': middle_y},
-    {'x': middle_x, 'y': range(1, CELLHEIGHT - 1)},
+    {'x': range(1, middle_x - 2), 'y': middle_y - 1},
+    {'x': range(middle_x + 1, CELLWIDTH - 1), 'y': middle_y - 1},
+    {'x': middle_x - 1, 'y': range(1, middle_y - 1)},
+    {'x': middle_x - 1, 'y': range(middle_y, CELLHEIGHT - 1)},
 ]
 
 walls6 = [
