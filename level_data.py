@@ -162,16 +162,18 @@ walls6 = [
 ]
 
 walls5 = [
-    {'x': range(0, CELLWIDTH), 'y': middle_y},
-    {'x': middle_x, 'y': range(0, CELLHEIGHT)},
-    {'x': range(0, CELLWIDTH / 4), 'y': CELLHEIGHT / 5},
-    {'x': range(CELLWIDTH / 4 + 1, middle_x), 'y': CELLHEIGHT / 5},
+    {'x': range(0, 3), 'y': middle_y-1},
+    {'x': range(4, CELLWIDTH - 4), 'y': middle_y-1},
+    {'x': range(CELLWIDTH - 3, CELLWIDTH), 'y': middle_y-1},
+    {'x': middle_x-1, 'y': range(0, CELLHEIGHT)},
+    {'x': range(0, CELLWIDTH / 4 - 1), 'y': CELLHEIGHT / 5},
+    {'x': range(CELLWIDTH / 4, middle_x), 'y': CELLHEIGHT / 5},
     {'x': range(middle_x, middle_x + 11), 'y': CELLHEIGHT / 5},
     {'x': range(middle_x + 12, CELLWIDTH), 'y': CELLHEIGHT / 5},
-    {'x': range(0, CELLWIDTH / 4), 'y': CELLHEIGHT / 5 + 19},
-    {'x': range(CELLWIDTH / 4 + 1, middle_x), 'y': CELLHEIGHT / 5 + 19},
-    {'x': range(middle_x + 1, CELLWIDTH - 12), 'y': CELLHEIGHT / 5 + 19},
-    {'x': range(CELLWIDTH - 11, CELLWIDTH), 'y': CELLHEIGHT / 5 + 19},
+    {'x': range(0, CELLWIDTH / 4 - 1), 'y': CELLHEIGHT / 5 + 20},
+    {'x': range(CELLWIDTH / 4, middle_x), 'y': CELLHEIGHT / 5 + 20},
+    {'x': range(middle_x, CELLWIDTH - 11), 'y': CELLHEIGHT / 5 + 20},
+    {'x': range(CELLWIDTH - 10, CELLWIDTH), 'y': CELLHEIGHT / 5 + 20},
         
 ]
 
